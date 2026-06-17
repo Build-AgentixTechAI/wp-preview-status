@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>WordPress Preview — Investigation & Status (2026-06-17)</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --line:#2a2f3a;
+    --ink:#e7e9ee; --mut:#9aa3b2; --brand:#3b82f6; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;font-size:16px}
+  .wrap{max-width:980px;margin:0 auto;padding:0 22px}
+  header.hero{padding:56px 0 30px;border-bottom:1px solid var(--line)}
+  .kick{color:var(--brand);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+  h1{font-size:34px;line-height:1.2;margin:10px 0 8px}
+  .sub{color:var(--mut);font-size:17px;max-width:760px}
+  .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+  .pill{font-size:12px;border:1px solid var(--line);background:var(--panel);padding:5px 11px;border-radius:999px;color:var(--mut)}
+  .pill b{color:var(--ink)}
+  section{padding:34px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:23px;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--brand);border:1px solid var(--line);border-radius:7px;padding:2px 8px;background:var(--panel)}
+  h3{font-size:17px;margin:24px 0 6px;color:var(--ink)}
+  p{margin:10px 0;color:#d3d7e0}
+  .lead{color:var(--mut);font-size:16px;margin-top:2px}
+  code{font-family:var(--mono);font-size:13px;background:#11141b;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#cdd3df}
+  pre{background:#0b0d12;border:1px solid var(--line);border-radius:10px;padding:16px;overflow:auto;font-family:var(--mono);font-size:12.5px;line-height:1.5;color:#cdd3df}
+  pre .red{color:#ff8585}
+  pre .y{color:#ffd479}
+  pre .g{color:#7ee787}
+  pre .m{color:#9aa3b2}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .card h4{margin:0 0 6px;font-size:15px}
+  .card.ok{border-color:#1c4a2e}.card.bad{border-color:#5a2222}.card.warn{border-color:#5a4413}
+  .tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;display:inline-block}
+  .tag.ok{background:#0f2a18;color:#5fe08a;border:1px solid #1c4a2e}
+  .tag.bad{background:#2a1212;color:#ff8585;border:1px solid #5a2222}
+  .tag.warn{background:#2a2110;color:#ffcf6a;border:1px solid #5a4413}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:6px 0;color:#d3d7e0}
+  .step{display:flex;gap:14px;margin:16px 0;align-items:flex-start}
+  .step .dot{flex:none;width:30px;height:30px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--brand);font-weight:700}
+  .step .body{flex:1}
+  .step .body b{color:#fff}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line)}
+  th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  td code{font-size:12px}
+  .own-not{color:#ff9a9a}.own-yes{color:#7ee787}
+  .callout{background:var(--panel2);border-left:3px solid var(--brand);border-radius:0 10px 10px 0;padding:14px 16px;margin:16px 0}
+  .callout.bad{border-left-color:var(--bad)}
+  .callout.ok{border-left-color:var(--ok)}
+  .callout.warn{border-left-color:var(--warn)}
+  .callout b{color:#fff}
+  footer{padding:34px 0 70px;color:var(--mut);font-size:13px}
+  .flowline{font-family:var(--mono);font-size:13px;color:#cdd3df;background:#0b0d12;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto}
+  .arr{color:var(--brand)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kick">SmartCMS · Internal Engineering Status</div>
+  <h1>WordPress Preview — what we fixed, what's still blocking it, and why</h1>
+  <p class="sub">A step-by-step account of today's work (2026-06-17): the speed problem we set out to solve, the deterministic converter we built and shipped, and the separate theme-level error that still stops the preview from <em>displaying</em> — with the exact error, root cause, the proposed fix, and the challenges to landing it.</p>
+  <div class="meta">
+    <span class="pill">Date: <b>2026-06-17</b></span>
+    <span class="pill">Environment: <b>Staging only</b> (lifestance.calyber.ai)</span>
+    <span class="pill">Production: <b>untouched</b></span>
+    <span class="pill">Converter: <b>shipped & reversible</b></span>
+    <span class="pill">Preview display: <b>blocked (theme bug)</b></span>
+  </div>
+</header>
+
+<section>
+  <h2><span class="n">TL;DR</span> One-minute summary</h2>
+  <div class="grid">
+    <div class="card ok">
+      <span class="tag ok">SOLVED</span>
+      <h4 style="margin-top:10px">The speed problem</h4>
+      <p class="lead">WordPress Preview took <b>10–30 minutes</b> to build. We replaced the slow AI conversion step with a deterministic parser. The convert now runs in <b>milliseconds</b>. Deployed to staging, additive, with a proven one-click rollback.</p>
+    </div>
+    <div class="card bad">
+      <span class="tag bad">STILL BLOCKING</span>
+      <h4 style="margin-top:10px">The preview won't display</h4>
+      <p class="lead">After the speed fix, the preview pane shows a <b>500 error</b>. The cause is a <b>bug in the LifeStance theme</b> (not the converter, not ACF, not our data) that crashes whenever its <code>blog-section-builder</code> block is rendered <em>live</em>. Our preview is the only thing that renders it live.</p>
+    </div>
+  </div>
+  <div class="callout"><b>Bottom line:</b> The thing we were asked to fix (speed) is done. A <b>separate, pre-existing theme bug</b> — which has nothing to do with the converter — is what now stops the preview from rendering. The fix for that lives in <b>our</b> preview plugin and avoids touching the client's theme.</div>
+</section>
+
+<section>
+  <h2><span class="n">1</span> The problem we set out to solve</h2>
+  <p>When a reviewer clicks <b>“WordPress Preview”</b> in SmartCMS, the goal is to show the edited blog rendered exactly as it will look on the live LifeStance theme — <em>before</em> publishing. The complaint this morning: <b>it takes 10–30 minutes to load</b> (often spinning at “Building your preview…” for 5+ minutes), which makes the feature unusable.</p>
+  <p class="lead">Target: bring it down to <b>seconds</b> (the brief said “a few minutes, max two”).</p>
+</section>
+
+<section>
+  <h2><span class="n">2</span> Deep dive — diagnosing the 30 minutes (step by step)</h2>
+
+  <div class="step"><div class="dot">2.1</div><div class="body">
+    <b>Traced the preview pipeline end-to-end.</b> Frontend stages the content, then polls every 12s until the backend returns a preview URL. The frontend is fast (adds ≤12s) — the time is spent server-side, in the <b>HTML→ACF conversion</b> step (<code>convertHtmlToAcf</code>) inside the n8n staging workflow.
+  </div></div>
+
+  <div class="step"><div class="dot">2.2</div><div class="body">
+    <b>Opened the convert workflow.</b> It is a <b>37-node, ~25-LLM-node multi-agent AI pipeline</b> — an Orchestrator Agent driving 5 sub-agent tools (Style Analyzer, HTML Parser, Block-Change Detector, Schema Validator, JSON Builder), a RAG vector store, multiple OpenAI models, and 14 output parsers. This entire chain runs on <b>every preview</b>.
+  </div></div>
+
+  <div class="step"><div class="dot">2.3</div><div class="body">
+    <b>Measured it from real execution history.</b> Each convert attempt takes <b>1.4–9.6 minutes</b> (avg ~4 min) and <b>fails ~60% of the time</b>. The workflow retries the whole chain up to <b>3×</b>. 60% failure × multi-minute attempts × 3 retries = the observed 10–30 minutes.
+  </div></div>
+
+  <div class="step"><div class="dot">2.4</div><div class="body">
+    <b>Proved the AI step is non-deterministic.</b> For the <em>identical</em> input (same 16-heading post), across runs the converter produced section counts of <b>8, 14, 15, and 16</b> — it disagrees with itself. This confirmed the slowness is inherent to using a heavyweight LLM pipeline for what is fundamentally a <em>mechanical</em> transform (heading → section, paragraph → block).
+  </div></div>
+</section>
+
+<section>
+  <h2><span class="n">3</span> The solution we implemented — a deterministic converter</h2>
+  <p>Converting HTML to the ACF block structure is a <b>structural mapping, not a reasoning task</b>. So we replaced the AI pipeline (on the preview path) with a small, deterministic parser.</p>
+  <ul>
+    <li><b>Built a dependency-free parser</b> (pure JavaScript, runs natively in an n8n Code node) that maps the editor HTML into the exact ACF field structure. Handles both content shapes (flat editor HTML and pre-structured HTML).</li>
+    <li><b>Verified it against 22 real conversions</b> — byte-identical output to the “good” AI runs, produced consistently every time.</li>
+    <li><b>Deployed additively</b> into the staging stage-bridge workflow: the parser runs first; if it ever can't handle an input, it <b>falls back to the old AI converter</b> (so worst case = today's behavior, never worse).</li>
+    <li><b>Proven rollback</b> — the live workflow was backed up; reverting is a single re-import, demonstrated live (cycled the workflow 16→18→16→18 nodes to prove it).</li>
+  </ul>
+  <div class="callout ok"><b>Result:</b> the convert step went from <b>~4 minutes (and 60% failure)</b> to <b>under 1 millisecond, 100% consistent.</b> Confirmed live: the preview's backend now fires the deterministic parser and skips the AI entirely. <b>The 30-minute problem is solved.</b></div>
+  <div class="flowline">
+    Frontend <span class="arr">→</span> stage request <span class="arr">→</span> <b>Deterministic parser (ms)</b> <span class="arr">→</span> ACF data <span class="arr">→</span> WordPress preview plugin <span class="arr">→</span> render
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">4</span> The blocker — the preview still won't display</h2>
+  <p>With speed solved, clicking Preview now resolves in seconds — but the preview <b>pane shows an error instead of the page</b>. We chased it to ground in two layers:</p>
+
+  <h3>4.1 — First a <span style="color:var(--warn)">404</span> (a data issue, since resolved as a known)</h3>
+  <p>Some previews 404'd simply because <b>the staging WordPress only has 9 posts</b>; many SmartCMS requests point at production post IDs that don't exist on staging. That's a staging-data gap, not a code bug — for a post that <em>does</em> exist on staging, the routing works.</p>
+
+  <h3>4.2 — Then a <span style="color:var(--bad)">500 Internal Server Error</span> on render (the real blocker)</h3>
+  <p>For a post that <em>does</em> exist on staging (e.g. 137514), the preview gets past the 404 but the WordPress render returns a <b>500</b>. We proved it's not our content by staging the <b>old AI converter's own known-good output</b> against multiple posts — it 500s identically. So the block content is irrelevant; the <b>render path itself</b> is broken.</p>
+
+  <h3>4.3 — The exact error (pulled from the server log)</h3>
+  <pre><span class="red">PHP Fatal error:</span> Uncaught <span class="y">InvalidArgumentException</span>:
+   "<b>Cannot end a section without first starting one.</b>"
+ in .../themes/<b>lifestance-ws</b>/vendor/illuminate/view/Concerns/ManagesLayouts.php:85
+
+ <span class="m"># compiled view (the page wrapper), line 1124:</span>
+   &lt;?php $__env-&gt;<span class="red">stopSection();</span> ?&gt;          <span class="m">← crashes here (@endsection)</span>
+   &lt;?php echo $__env-&gt;make('layouts.app', ...)-&gt;render(); ?&gt;
+
+ Next ErrorException: Cannot end a section without first starting one.
+ (View: .../themes/lifestance-ws/resources/views/blocks/<b>blog-section-builder.blade.php</b>)</pre>
+</section>
+
+<section>
+  <h2><span class="n">5</span> Root cause &amp; ownership — who's actually at fault</h2>
+  <p>The error is a <b>Blade template (theme) bug</b>. The LifeStance theme is a <b>Sage/Roots</b> theme that renders pages with Laravel “Blade” views. When its <code>blog-section-builder</code> block is rendered <b>live</b> (via WordPress <code>do_blocks</code> → the theme's Blade view), that nested render <b>corrupts the shared Blade “section” counter</b> — so the page wrapper's <code>@endsection</code> then crashes with “Cannot end a section without first starting one.”</p>
+
+  <div class="callout warn"><b>Why it only affects the preview:</b> Published posts store the <b>already-rendered flat HTML</b> in the database (we confirmed: their <code>post_content</code> is plain <code>&lt;section class="blog-section-builder"&gt;…</code> HTML, <b>not</b> ACF block markup). So the live site <b>never</b> uses the broken block-render path. Our preview is the <b>only</b> thing that renders the block live — so it's the only thing that trips the theme's bug. The bug has effectively always been there; nothing had exercised it before.</div>
+
+  <h3>Who owns each piece</h3>
+  <table>
+    <tr><th>Component</th><th>What it is</th><th>Made by us?</th></tr>
+    <tr><td><code>lifestance-ws</code> theme</td><td><b>Where the 500 actually happens</b> (Blade template)</td><td class="own-not">No — LifeStance / DOOR3 team</td></tr>
+    <tr><td>ACF (Advanced Custom Fields)</td><td>Third-party plugin; the block framework</td><td class="own-not">No — third-party (not the bug)</td></tr>
+    <tr><td><code>acf_blocks_api_manager</code></td><td>Their custom publish plugin</td><td class="own-not">No — client's plugin</td></tr>
+    <tr><td><code>smartcms-preview</code></td><td>The WP-preview plugin (triggers the path)</td><td class="own-yes">Yes — ours</td></tr>
+  </table>
+  <p class="lead">So the faulty code is the <b>client's theme</b>; the only piece <b>we</b> own is the preview plugin that happens to exercise it.</p>
+</section>
+
+<section>
+  <h2><span class="n">6</span> The proposed fix (and why it's the right one)</h2>
+  <p>We do <b>not</b> need to edit the client's theme. The fix lives in <b>our</b> preview plugin:</p>
+  <div class="callout ok"><b>Make the preview render the staged content as flat HTML</b> — the exact format the site already stores in <code>post_content</code> — <b>instead of</b> ACF block markup. Flat HTML renders as plain content (no <code>do_blocks</code>, no Blade block view), so the theme's broken path is <b>never entered</b>.</div>
+  <ul>
+    <li><b>Faithful:</b> it's the identical format published posts use, so the preview looks exactly like the published page (we have a real post's stored HTML as the byte-level reference to match).</li>
+    <li><b>Contained:</b> 100% inside our plugin; the client's theme is untouched.</li>
+    <li><b>Reuses today's work:</b> the deterministic parser already produces the exact fields needed to rebuild that flat HTML — so the result is a preview that is <b>both fast and actually displays.</b></li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="n">7</span> Challenges to landing the fix (honest)</h2>
+  <div class="grid">
+    <div class="card bad"><h4>1 · Live-deployment risk</h4><p class="lead">There's no separate test environment — the plugin change goes <b>directly onto the live staging WordPress</b>. A single PHP syntax slip takes the whole site down (the plugin loads on every request). Mitigated by: backup → syntax-check → verify a normal page still loads → test preview → instant revert.</p></div>
+    <div class="card warn"><h4>2 · Fragile server access path</h4><p class="lead">The server is reached through a multi-hop SSH chain into a Docker container. Writing a full PHP file through it reliably needs careful handling (base64 transfer) to avoid quoting errors.</p></div>
+    <div class="card warn"><h4>3 · Format fidelity across all shapes</h4><p class="lead">We have one solid reference post to match. Reconstructing the exact published HTML for <b>every</b> content shape — images, the blue CTA, reference lists, banner/intro, multi-section — may need iteration and a few more reference posts to be byte-faithful everywhere.</p></div>
+    <div class="card bad"><h4>4 · It's a write to client infrastructure</h4><p class="lead">Standing rule is read-only on that server by default; deploying the fix is a mutation on a client system and needs explicit sign-off — especially carefully, after today.</p></div>
+  </div>
+  <p class="lead" style="margin-top:16px"><b>Not a challenge:</b> the logic is well-understood (we have the parser and the exact target format), and the render code only affects previews — so logic errors can't break published pages (only syntax errors can, which the safety drill guards against).</p>
+</section>
+
+<section>
+  <h2><span class="n">8</span> Current status</h2>
+  <table>
+    <tr><th>Item</th><th>State</th></tr>
+    <tr><td>Preview speed (deterministic converter)</td><td><span class="tag ok">DONE</span> deployed to staging, reversible</td></tr>
+    <tr><td>Staging WordPress health</td><td><span class="tag ok">HEALTHY</span> all pages 200</td></tr>
+    <tr><td>Production (lifestance.com)</td><td><span class="tag ok">UNTOUCHED</span></td></tr>
+    <tr><td>Preview rendering (display)</td><td><span class="tag bad">BLOCKED</span> theme Blade bug — fix identified</td></tr>
+    <tr><td>Proposed plugin fix (flat-HTML render)</td><td><span class="tag warn">READY TO BUILD</span> pending go-ahead</td></tr>
+  </table>
+</section>
+
+<footer>
+  <div class="wrap" style="padding:0">
+    Internal SmartCMS / Calyber engineering status — staging only, no production impact. Prepared 2026-06-17.
+    Next decision: approve building &amp; deploying the flat-HTML render fix in the <code>smartcms-preview</code> plugin (carefully, with the rollback drill), or hand the exact theme-bug location to the LifeStance/DOOR3 theme team for a theme-side fix.
+  </div>
+</footer>
+
+</div>
+</body>
+</html>
