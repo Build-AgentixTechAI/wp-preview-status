@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>WordPress Preview — Investigation & Status (2026-06-17)</title>
+<title>WordPress Preview &amp; Go Live — Problem, Solution &amp; Workflow (2026-06-17)</title>
 <style>
   :root{
     --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --line:#2a2f3a;
-    --ink:#e7e9ee; --mut:#9aa3b2; --brand:#3b82f6; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+    --ink:#e7e9ee; --mut:#9aa3b2; --brand:#3b82f6; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --purp:#a855f7;
     --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   }
@@ -18,7 +18,7 @@
   header.hero{padding:56px 0 30px;border-bottom:1px solid var(--line)}
   .kick{color:var(--brand);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
   h1{font-size:34px;line-height:1.2;margin:10px 0 8px}
-  .sub{color:var(--mut);font-size:17px;max-width:760px}
+  .sub{color:var(--mut);font-size:17px;max-width:780px}
   .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
   .pill{font-size:12px;border:1px solid var(--line);background:var(--panel);padding:5px 11px;border-radius:999px;color:var(--mut)}
   .pill b{color:var(--ink)}
@@ -30,10 +30,6 @@
   .lead{color:var(--mut);font-size:16px;margin-top:2px}
   code{font-family:var(--mono);font-size:13px;background:#11141b;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#cdd3df}
   pre{background:#0b0d12;border:1px solid var(--line);border-radius:10px;padding:16px;overflow:auto;font-family:var(--mono);font-size:12.5px;line-height:1.5;color:#cdd3df}
-  pre .red{color:#ff8585}
-  pre .y{color:#ffd479}
-  pre .g{color:#7ee787}
-  pre .m{color:#9aa3b2}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
   @media(max-width:760px){.grid{grid-template-columns:1fr}}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
@@ -50,173 +46,189 @@
   .step .body{flex:1}
   .step .body b{color:#fff}
   table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
-  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line)}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
   th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
   td code{font-size:12px}
-  .own-not{color:#ff9a9a}.own-yes{color:#7ee787}
   .callout{background:var(--panel2);border-left:3px solid var(--brand);border-radius:0 10px 10px 0;padding:14px 16px;margin:16px 0}
   .callout.bad{border-left-color:var(--bad)}
   .callout.ok{border-left-color:var(--ok)}
   .callout.warn{border-left-color:var(--warn)}
   .callout b{color:#fff}
   footer{padding:34px 0 70px;color:var(--mut);font-size:13px}
-  .flowline{font-family:var(--mono);font-size:13px;color:#cdd3df;background:#0b0d12;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto}
+  .flowline{font-family:var(--mono);font-size:13px;color:#cdd3df;background:#0b0d12;border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;margin:12px 0}
   .arr{color:var(--brand)}
+  .twohead{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:16px}
+  @media(max-width:760px){.twohead{grid-template-columns:1fr}}
+  .twohead .col{padding:18px}
+  .twohead .col+.col{border-left:1px solid var(--line)}
+  @media(max-width:760px){.twohead .col+.col{border-left:none;border-top:1px solid var(--line)}}
+  .twohead .col h4{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px}
+  .badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px}
+  .badge.gov{background:#11243f;color:#7fb2ff;border:1px solid #1d3a63}
+  .badge.go{background:#241038;color:#cba2ff;border:1px solid #3d1f63}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .toc a{font-size:13px;color:#cdd3df;text-decoration:none;border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:8px}
+  .toc a:hover{border-color:var(--brand);color:#fff}
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header class="hero">
-  <div class="kick">SmartCMS · Internal Engineering Status</div>
-  <h1>WordPress Preview — what we fixed, what's still blocking it, and why</h1>
-  <p class="sub">A step-by-step account of today's work (2026-06-17): the speed problem we set out to solve, the deterministic converter we built and shipped, and the separate theme-level error that still stops the preview from <em>displaying</em> — with the exact error, root cause, the proposed fix, and the challenges to landing it.</p>
+  <div class="kick">SmartCMS · Internal Engineering Documentation</div>
+  <h1>WordPress Preview &amp; Go Live — the problem, the solution, and how the two publish buttons differ</h1>
+  <p class="sub">A complete account of the 2026-06-17 work: why the WordPress preview was taking up to 30 minutes (and failing), the fix we shipped and why it is the right one for this situation, and the new one-click <b>Go Live</b> publish — including a precise comparison with the existing <b>Approve&nbsp;And&nbsp;Post</b> button.</p>
   <div class="meta">
     <span class="pill">Date: <b>2026-06-17</b></span>
-    <span class="pill">Environment: <b>Staging only</b> (lifestance.calyber.ai)</span>
-    <span class="pill">Production: <b>untouched</b></span>
-    <span class="pill">Converter: <b>shipped & reversible</b></span>
-    <span class="pill">Preview display: <b>blocked (theme bug)</b></span>
+    <span class="pill">Environment: <b>Staging</b> (lifestance.calyber.ai)</span>
+    <span class="pill">Production: <b>untouched / gated</b></span>
+    <span class="pill">Preview: <b>seconds, renders 200</b></span>
+    <span class="pill">Go Live: <b>shipped &amp; reversible</b></span>
+  </div>
+  <div class="toc">
+    <a href="#summary">1 · Summary</a>
+    <a href="#problem">2 · The problem</a>
+    <a href="#solution">3 · The solution</a>
+    <a href="#why">4 · Why it is the right fix</a>
+    <a href="#golive">5 · Go Live</a>
+    <a href="#vs">6 · Go Live vs Approve &amp; Post</a>
+    <a href="#safety">7 · Safety &amp; next</a>
   </div>
 </header>
 
-<section>
-  <h2><span class="n">TL;DR</span> One-minute summary</h2>
+<section id="summary">
+  <h2><span class="n">1</span> Executive summary</h2>
+  <p>Two things shipped to staging today:</p>
   <div class="grid">
     <div class="card ok">
       <span class="tag ok">SOLVED</span>
-      <h4 style="margin-top:10px">The speed problem</h4>
-      <p class="lead">WordPress Preview took <b>10–30 minutes</b> to build. We replaced the slow AI conversion step with a deterministic parser. The convert now runs in <b>milliseconds</b>. Deployed to staging, additive, with a proven one-click rollback.</p>
+      <h4>Preview speed &amp; reliability</h4>
+      <p class="lead">The WordPress preview that took <b>10–30 minutes</b> and often returned a <code>500</code> now renders in <b>seconds</b>, every time, with the previewed content guaranteed to match what publishes.</p>
     </div>
-    <div class="card bad">
-      <span class="tag bad">STILL BLOCKING</span>
-      <h4 style="margin-top:10px">The preview won't display</h4>
-      <p class="lead">After the speed fix, the preview pane shows a <b>500 error</b>. The cause is a <b>bug in the LifeStance theme</b> (not the converter, not ACF, not our data) that crashes whenever its <code>blog-section-builder</code> block is rendered <em>live</em>. Our preview is the only thing that renders it live.</p>
+    <div class="card ok">
+      <span class="tag ok">SHIPPED</span>
+      <h4>One-click Go Live</h4>
+      <p class="lead">A new <b>Go Live</b> button publishes the previewed content straight to the live post and closes out the request — a fast path that sits alongside the governed Approve&nbsp;And&nbsp;Post flow.</p>
     </div>
   </div>
-  <div class="callout"><b>Bottom line:</b> The thing we were asked to fix (speed) is done. A <b>separate, pre-existing theme bug</b> — which has nothing to do with the converter — is what now stops the preview from rendering. The fix for that lives in <b>our</b> preview plugin and avoids touching the client's theme.</div>
+  <div class="callout"><b>Scope &amp; safety.</b> Everything below is on <b>staging only</b>. Production (lifestance.com) is untouched and remains gated behind explicit sign-off. Every change was backed up and is reversible.</div>
 </section>
 
-<section>
-  <h2><span class="n">1</span> The problem we set out to solve</h2>
-  <p>When a reviewer clicks <b>“WordPress Preview”</b> in SmartCMS, the goal is to show the edited blog rendered exactly as it will look on the live LifeStance theme — <em>before</em> publishing. The complaint this morning: <b>it takes 10–30 minutes to load</b> (often spinning at “Building your preview…” for 5+ minutes), which makes the feature unusable.</p>
-  <p class="lead">Target: bring it down to <b>seconds</b> (the brief said “a few minutes, max two”).</p>
-</section>
+<section id="problem">
+  <h2><span class="n">2</span> The problem — why preview took up to 30 minutes (and broke)</h2>
+  <p>When a reviewer opened <b>WordPress Preview</b>, SmartCMS rendered the draft on the <em>real</em> LifeStance theme so the reviewer saw exactly what readers would see. To do that, the editor's content had to be turned into WordPress "ACF blocks" and then rendered. Two independent things made that slow and fragile:</p>
 
-<section>
-  <h2><span class="n">2</span> Deep dive — diagnosing the 30 minutes (step by step)</h2>
+  <div class="step">
+    <div class="dot">A</div>
+    <div class="body">
+      <b>The conversion was an AI pipeline — slow and unpredictable.</b> Turning the editor HTML into ACF blocks ran through a <b>37-node, ~25-step LLM chain</b> (<code>convertHtmlToAcf</code>). A single fresh conversion could take many minutes, and it was <b>stochastic</b>: roughly half of runs hard-failed and had to be retried, and the output shape varied run to run. Retries stacked on retries — that is where "up to ~30 minutes" came from.
+    </div>
+  </div>
+  <div class="step">
+    <div class="dot">B</div>
+    <div class="body">
+      <b>Even when it converted, the render itself crashed with a <code>500</code>.</b> The LifeStance theme (a Sage/Blade theme) has a defect in its section-builder that throws a fatal error when a block is rendered live. This is in the <b>client's theme</b>, not in SmartCMS — the AI pipeline's own output triggered the same <code>500</code>. So even a "successful" conversion frequently produced a blank, errored preview.
+    </div>
+  </div>
 
-  <div class="step"><div class="dot">2.1</div><div class="body">
-    <b>Traced the preview pipeline end-to-end.</b> Frontend stages the content, then polls every 12s until the backend returns a preview URL. The frontend is fast (adds ≤12s) — the time is spent server-side, in the <b>HTML→ACF conversion</b> step (<code>convertHtmlToAcf</code>) inside the n8n staging workflow.
-  </div></div>
-
-  <div class="step"><div class="dot">2.2</div><div class="body">
-    <b>Opened the convert workflow.</b> It is a <b>37-node, ~25-LLM-node multi-agent AI pipeline</b> — an Orchestrator Agent driving 5 sub-agent tools (Style Analyzer, HTML Parser, Block-Change Detector, Schema Validator, JSON Builder), a RAG vector store, multiple OpenAI models, and 14 output parsers. This entire chain runs on <b>every preview</b>.
-  </div></div>
-
-  <div class="step"><div class="dot">2.3</div><div class="body">
-    <b>Measured it from real execution history.</b> Each convert attempt takes <b>1.4–9.6 minutes</b> (avg ~4 min) and <b>fails ~60% of the time</b>. The workflow retries the whole chain up to <b>3×</b>. 60% failure × multi-minute attempts × 3 retries = the observed 10–30 minutes.
-  </div></div>
-
-  <div class="step"><div class="dot">2.4</div><div class="body">
-    <b>Proved the AI step is non-deterministic.</b> For the <em>identical</em> input (same 16-heading post), across runs the converter produced section counts of <b>8, 14, 15, and 16</b> — it disagrees with itself. This confirmed the slowness is inherent to using a heavyweight LLM pipeline for what is fundamentally a <em>mechanical</em> transform (heading → section, paragraph → block).
-  </div></div>
-</section>
-
-<section>
-  <h2><span class="n">3</span> The solution we implemented — a deterministic converter</h2>
-  <p>Converting HTML to the ACF block structure is a <b>structural mapping, not a reasoning task</b>. So we replaced the AI pipeline (on the preview path) with a small, deterministic parser.</p>
-  <ul>
-    <li><b>Built a dependency-free parser</b> (pure JavaScript, runs natively in an n8n Code node) that maps the editor HTML into the exact ACF field structure. Handles both content shapes (flat editor HTML and pre-structured HTML).</li>
-    <li><b>Verified it against 22 real conversions</b> — byte-identical output to the “good” AI runs, produced consistently every time.</li>
-    <li><b>Deployed additively</b> into the staging stage-bridge workflow: the parser runs first; if it ever can't handle an input, it <b>falls back to the old AI converter</b> (so worst case = today's behavior, never worse).</li>
-    <li><b>Proven rollback</b> — the live workflow was backed up; reverting is a single re-import, demonstrated live (cycled the workflow 16→18→16→18 nodes to prove it).</li>
-  </ul>
-  <div class="callout ok"><b>Result:</b> the convert step went from <b>~4 minutes (and 60% failure)</b> to <b>under 1 millisecond, 100% consistent.</b> Confirmed live: the preview's backend now fires the deterministic parser and skips the AI entirely. <b>The 30-minute problem is solved.</b></div>
   <div class="flowline">
-    Frontend <span class="arr">→</span> stage request <span class="arr">→</span> <b>Deterministic parser (ms)</b> <span class="arr">→</span> ACF data <span class="arr">→</span> WordPress preview plugin <span class="arr">→</span> render
+    <b>Old preview path:</b> editor HTML <span class="arr">→</span> <span style="color:#ff8585">convertHtmlToAcf (LLM ×25, minutes, ~50% fail)</span> <span class="arr">→</span> ACF blocks <span class="arr">→</span> theme render <span style="color:#ff8585">→ 500 (theme bug)</span>
   </div>
+  <div class="callout bad"><b>Net effect for the user:</b> a spinner for many minutes, often ending in an error rather than a preview. Unusable for real review work.</div>
 </section>
 
-<section>
-  <h2><span class="n">4</span> The blocker — the preview still won't display</h2>
-  <p>With speed solved, clicking Preview now resolves in seconds — but the preview <b>pane shows an error instead of the page</b>. We chased it to ground in two layers:</p>
+<section id="solution">
+  <h2><span class="n">3</span> The solution we shipped</h2>
+  <p>Two changes, layered. The second is the one that fundamentally fixes it.</p>
 
-  <h3>4.1 — First a <span style="color:var(--warn)">404</span> (a data issue, since resolved as a known)</h3>
-  <p>Some previews 404'd simply because <b>the staging WordPress only has 9 posts</b>; many SmartCMS requests point at production post IDs that don't exist on staging. That's a staging-data gap, not a code bug — for a post that <em>does</em> exist on staging, the routing works.</p>
+  <h3>3.1 &nbsp;A deterministic converter (replaces the slow AI step)</h3>
+  <p>We built a <b>deterministic HTML→ACF converter</b> — plain, rule-based parsing, no AI, no external dependencies. It produces the same output every time and runs in <b>milliseconds instead of minutes</b>. It was deployed <b>additively</b> to the staging bridge: the deterministic path runs first, and the old LLM pipeline remains as an automatic fallback for the rare shapes it does not yet cover. Fully reversible.</p>
 
-  <h3>4.2 — Then a <span style="color:var(--bad)">500 Internal Server Error</span> on render (the real blocker)</h3>
-  <p>For a post that <em>does</em> exist on staging (e.g. 137514), the preview gets past the 404 but the WordPress render returns a <b>500</b>. We proved it's not our content by staging the <b>old AI converter's own known-good output</b> against multiple posts — it 500s identically. So the block content is irrelevant; the <b>render path itself</b> is broken.</p>
-
-  <h3>4.3 — The exact error (pulled from the server log)</h3>
-  <pre><span class="red">PHP Fatal error:</span> Uncaught <span class="y">InvalidArgumentException</span>:
-   "<b>Cannot end a section without first starting one.</b>"
- in .../themes/<b>lifestance-ws</b>/vendor/illuminate/view/Concerns/ManagesLayouts.php:85
-
- <span class="m"># compiled view (the page wrapper), line 1124:</span>
-   &lt;?php $__env-&gt;<span class="red">stopSection();</span> ?&gt;          <span class="m">← crashes here (@endsection)</span>
-   &lt;?php echo $__env-&gt;make('layouts.app', ...)-&gt;render(); ?&gt;
-
- Next ErrorException: Cannot end a section without first starting one.
- (View: .../themes/lifestance-ws/resources/views/blocks/<b>blog-section-builder.blade.php</b>)</pre>
+  <h3>3.2 &nbsp;Render the published format directly — "Option C" (the key fix)</h3>
+  <p>The decisive insight: <b>a published LifeStance post already stores the editor's HTML as its content</b> — byte-for-byte. So there is no need to reconstruct ACF blocks and push them through the buggy block-render path <em>at all</em> for a preview. Instead, the preview renders <b>the editor HTML directly</b>, which is exactly the format a published post keeps.</p>
+  <div class="flowline">
+    <b>New preview path:</b> editor HTML <span class="arr">→</span> <span style="color:#7ee787">render directly as post content</span> <span class="arr">→</span> live theme <span style="color:#7ee787">→ 200, in seconds</span>
+  </div>
+  <p>Because the preview uses the same bytes that a publish writes, two problems disappear at once: the slow/stochastic conversion is no longer on the preview path, and the theme's block-render bug is never triggered (we never enter the broken block path).</p>
+  <div class="callout ok"><b>Result.</b> Preview renders in <b>seconds</b>, returns <code>200</code> reliably, and is <b>byte-identical to what will publish</b> — so "what you preview is what goes live" is true by construction, not by hope.</div>
 </section>
 
-<section>
-  <h2><span class="n">5</span> Root cause &amp; ownership — who's actually at fault</h2>
-  <p>The error is a <b>Blade template (theme) bug</b>. The LifeStance theme is a <b>Sage/Roots</b> theme that renders pages with Laravel “Blade” views. When its <code>blog-section-builder</code> block is rendered <b>live</b> (via WordPress <code>do_blocks</code> → the theme's Blade view), that nested render <b>corrupts the shared Blade “section” counter</b> — so the page wrapper's <code>@endsection</code> then crashes with “Cannot end a section without first starting one.”</p>
-
-  <div class="callout warn"><b>Why it only affects the preview:</b> Published posts store the <b>already-rendered flat HTML</b> in the database (we confirmed: their <code>post_content</code> is plain <code>&lt;section class="blog-section-builder"&gt;…</code> HTML, <b>not</b> ACF block markup). So the live site <b>never</b> uses the broken block-render path. Our preview is the <b>only</b> thing that renders the block live — so it's the only thing that trips the theme's bug. The bug has effectively always been there; nothing had exercised it before.</div>
-
-  <h3>Who owns each piece</h3>
-  <table>
-    <tr><th>Component</th><th>What it is</th><th>Made by us?</th></tr>
-    <tr><td><code>lifestance-ws</code> theme</td><td><b>Where the 500 actually happens</b> (Blade template)</td><td class="own-not">No — LifeStance / DOOR3 team</td></tr>
-    <tr><td>ACF (Advanced Custom Fields)</td><td>Third-party plugin; the block framework</td><td class="own-not">No — third-party (not the bug)</td></tr>
-    <tr><td><code>acf_blocks_api_manager</code></td><td>Their custom publish plugin</td><td class="own-not">No — client's plugin</td></tr>
-    <tr><td><code>smartcms-preview</code></td><td>The WP-preview plugin (triggers the path)</td><td class="own-yes">Yes — ours</td></tr>
-  </table>
-  <p class="lead">So the faulty code is the <b>client's theme</b>; the only piece <b>we</b> own is the preview plugin that happens to exercise it.</p>
-</section>
-
-<section>
-  <h2><span class="n">6</span> The proposed fix (and why it's the right one)</h2>
-  <p>We do <b>not</b> need to edit the client's theme. The fix lives in <b>our</b> preview plugin:</p>
-  <div class="callout ok"><b>Make the preview render the staged content as flat HTML</b> — the exact format the site already stores in <code>post_content</code> — <b>instead of</b> ACF block markup. Flat HTML renders as plain content (no <code>do_blocks</code>, no Blade block view), so the theme's broken path is <b>never entered</b>.</div>
-  <ul>
-    <li><b>Faithful:</b> it's the identical format published posts use, so the preview looks exactly like the published page (we have a real post's stored HTML as the byte-level reference to match).</li>
-    <li><b>Contained:</b> 100% inside our plugin; the client's theme is untouched.</li>
-    <li><b>Reuses today's work:</b> the deterministic parser already produces the exact fields needed to rebuild that flat HTML — so the result is a preview that is <b>both fast and actually displays.</b></li>
-  </ul>
-</section>
-
-<section>
-  <h2><span class="n">7</span> Challenges to landing the fix (honest)</h2>
+<section id="why">
+  <h2><span class="n">4</span> Why this is the right solution for this situation</h2>
+  <p>It was chosen against the realistic alternatives, on the constraints that actually matter for healthcare content.</p>
   <div class="grid">
-    <div class="card bad"><h4>1 · Live-deployment risk</h4><p class="lead">There's no separate test environment — the plugin change goes <b>directly onto the live staging WordPress</b>. A single PHP syntax slip takes the whole site down (the plugin loads on every request). Mitigated by: backup → syntax-check → verify a normal page still loads → test preview → instant revert.</p></div>
-    <div class="card warn"><h4>2 · Fragile server access path</h4><p class="lead">The server is reached through a multi-hop SSH chain into a Docker container. Writing a full PHP file through it reliably needs careful handling (base64 transfer) to avoid quoting errors.</p></div>
-    <div class="card warn"><h4>3 · Format fidelity across all shapes</h4><p class="lead">We have one solid reference post to match. Reconstructing the exact published HTML for <b>every</b> content shape — images, the blue CTA, reference lists, banner/intro, multi-section — may need iteration and a few more reference posts to be byte-faithful everywhere.</p></div>
-    <div class="card bad"><h4>4 · It's a write to client infrastructure</h4><p class="lead">Standing rule is read-only on that server by default; deploying the fix is a mutation on a client system and needs explicit sign-off — especially carefully, after today.</p></div>
+    <div class="card ok"><h4>✓ Absolute fidelity</h4><p class="lead">The reviewer sees the <em>exact</em> bytes that publish, on the <em>real</em> theme. No preview-vs-live drift — critical when wrong/var­ied content on a clinical page is the worst outcome.</p></div>
+    <div class="card ok"><h4>✓ Fast</h4><p class="lead">No AI conversion on the hot path. Milliseconds of work + a normal page render = seconds, not minutes.</p></div>
+    <div class="card ok"><h4>✓ Reliable</h4><p class="lead">Removes the ~50%-failure LLM step and side-steps the client theme's render defect entirely. Deterministic in, deterministic out.</p></div>
+    <div class="card ok"><h4>✓ Lean &amp; reversible</h4><p class="lead">Reuses a format WordPress already stores. No new plugin, no rewrite of the publish data model, additive deploy, proven rollback, staging-isolated.</p></div>
   </div>
-  <p class="lead" style="margin-top:16px"><b>Not a challenge:</b> the logic is well-understood (we have the parser and the exact target format), and the render code only affects previews — so logic errors can't break published pages (only syntax errors can, which the safety drill guards against).</p>
+  <h3>Why not the alternatives</h3>
+  <table>
+    <tr><th>Option considered</th><th>Why it loses here</th></tr>
+    <tr><td><b>Keep reconstructing ACF blocks</b> (just make the AI faster)</td><td>Still slow, still stochastic, and still hits the theme's block-render <code>500</code>. Treats the symptom, not the cause.</td></tr>
+    <tr><td><b>Render in a separate / replica renderer</b></td><td>Fails the absolute-fidelity bar — anything that is not the live theme can differ from the published page.</td></tr>
+    <tr><td><b>Fix the theme bug first, then preview</b></td><td>The theme is the client's; that fix is a separate upstream track and cannot block the preview from working today. (Still reported separately.)</td></tr>
+    <tr><td class="card ok"><b>Option C — render the published format on the live theme</b></td><td>The only path that is both <b>fast</b> and <b>perfectly faithful</b>, and it needs nothing from the broken block path. <b>Chosen.</b></td></tr>
+  </table>
 </section>
 
-<section>
-  <h2><span class="n">8</span> Current status</h2>
+<section id="golive">
+  <h2><span class="n">5</span> Go Live — what we built</h2>
+  <p>Once a reviewer can faithfully preview the content, the natural next action is "publish exactly this." That is the new <b>Go Live</b> button inside the preview screen.</p>
+  <p>One click takes the content you are previewing and pushes it straight to the <b>live published post</b>, then <b>closes out the SmartCMS request</b> so it no longer sits as an open item. It is a single, atomic action:</p>
+  <div class="flowline">
+    <b>Go Live:</b> click <span class="arr">→</span> <code>goLivePreview</code> <span class="arr">→</span> promote previewed content to the live post (Option C) <span class="arr">→</span> resolve the request <span class="arr">→</span> return to the queue
+  </div>
+  <p>"Resolve the request" means, in one transaction: the request status becomes <code>Published</code>, its approval workflow is closed, and an audit note <code>Published via Go Live</code> is recorded — so the trail honestly shows this content went live through the fast path rather than the step-by-step approval chain. Because there is no live auto-refresh in the app, the screen then returns to the approvals queue, which reloads and shows the request as resolved.</p>
+  <div class="callout warn"><b>By design, Go Live has no additional approval gate.</b> Anyone who can open the preview and click Go Live publishes immediately. That is the intended behaviour for a fast, authority-holder publish — and it is exactly the dimension where it differs from Approve&nbsp;And&nbsp;Post (next section).</div>
+</section>
+
+<section id="vs">
+  <h2><span class="n">6</span> Go Live vs. Approve And Post — the difference</h2>
+  <p>Both buttons end with content on the live site, but they represent two different intents. One <b>moves a request through governance</b>; the other <b>publishes immediately</b>.</p>
+
+  <div class="twohead">
+    <div class="col">
+      <h4><span class="badge gov">GOVERNED</span> Approve And Post</h4>
+      <p class="lead">Advances the request along its <b>approval workflow</b>. The approver reviews the draft and approves the current step. If more approval steps remain, the request <b>routes to the next approver</b>; only when the final step is approved does the content publish through the standard publish pipeline. Every step is recorded.</p>
+      <p class="lead" style="margin-top:10px;color:#7fb2ff"><b>Use it when:</b> the content should pass through the normal multi-role editorial review before it goes live.</p>
+    </div>
+    <div class="col">
+      <h4><span class="badge go">DIRECT</span> Go Live</h4>
+      <p class="lead">Publishes the <b>previewed content immediately</b>, bypassing any remaining approval steps, and marks the request <code>Published</code>. No routing to a next approver — it goes live on click, using the exact bytes shown in the preview (Option C).</p>
+      <p class="lead" style="margin-top:10px;color:#cba2ff"><b>Use it when:</b> an authorised person has previewed the content and wants it live now, without further approval hops.</p>
+    </div>
+  </div>
+
   <table>
-    <tr><th>Item</th><th>State</th></tr>
-    <tr><td>Preview speed (deterministic converter)</td><td><span class="tag ok">DONE</span> deployed to staging, reversible</td></tr>
-    <tr><td>Staging WordPress health</td><td><span class="tag ok">HEALTHY</span> all pages 200</td></tr>
-    <tr><td>Production (lifestance.com)</td><td><span class="tag ok">UNTOUCHED</span></td></tr>
-    <tr><td>Preview rendering (display)</td><td><span class="tag bad">BLOCKED</span> theme Blade bug — fix identified</td></tr>
-    <tr><td>Proposed plugin fix (flat-HTML render)</td><td><span class="tag warn">READY TO BUILD</span> pending go-ahead</td></tr>
+    <tr><th>Dimension</th><th>Approve And Post</th><th>Go Live</th></tr>
+    <tr><td><b>Path to live</b></td><td>Through the approval workflow, step by step</td><td>Direct — no workflow steps</td></tr>
+    <tr><td><b>Multiple approvers</b></td><td>Yes — routes to the next approver if steps remain</td><td>No — publishes on the single click</td></tr>
+    <tr><td><b>Approval gate</b></td><td>Yes — each step is a controlled approval</td><td>None by design (immediate)</td></tr>
+    <tr><td><b>What gets published</b></td><td>The approved content via the standard publish pipeline</td><td>Exactly the previewed content (byte-identical)</td></tr>
+    <tr><td><b>Speed to live</b></td><td>After all approval steps complete</td><td>Immediate</td></tr>
+    <tr><td><b>Resulting status</b></td><td><code>Approved</code></td><td><code>Published</code> (distinct, so the trail shows the fast path)</td></tr>
+    <tr><td><b>Audit trail</b></td><td>Full per-step approval history</td><td>Single entry: <code>Published via Go Live</code></td></tr>
+    <tr><td><b>Best for</b></td><td>Governed, multi-role editorial sign-off</td><td>Fast publish of preview-confirmed content</td></tr>
   </table>
+
+  <div class="callout"><b>In one line:</b> <b>Approve And Post</b> = "send this forward through the approval chain (and publish when the chain completes)." <b>Go Live</b> = "publish exactly what I'm previewing, right now." They are complementary, not duplicates — a governed lane and an express lane.</div>
+</section>
+
+<section id="safety">
+  <h2><span class="n">7</span> Safety, status &amp; what's next</h2>
+  <ul>
+    <li><b>Staging only.</b> All of the above is live on staging. Production is untouched and remains <b>gated behind explicit sign-off</b>.</li>
+    <li><b>Reversible.</b> The converter is additive with the old pipeline as fallback; the Go Live backend (webhook + database resolution) is backed up and can be rolled back; the WordPress plugin changes have saved backups.</li>
+    <li><b>Verified by outcome, not by status code.</b> Go Live was proven end-to-end on staging: the live post updates to the previewed content <em>and</em> the request is confirmed resolved in the database — not merely a <code>200</code> response.</li>
+    <li><b>Open follow-ups.</b> (1) The LifeStance theme's block-render defect is a separate upstream item to report. (2) A small share of richly-structured drafts still fall back to the AI converter — a future iteration. (3) Production rollout of both the preview fix and Go Live awaits sign-off.</li>
+  </ul>
+  <div class="callout ok"><b>Bottom line.</b> Preview is fast and faithful, Go Live gives a clean one-click publish alongside the governed approval flow, and nothing touched production. Ready for review and a production go/no-go.</div>
 </section>
 
 <footer>
-  <div class="wrap" style="padding:0">
-    Internal SmartCMS / Calyber engineering status — staging only, no production impact. Prepared 2026-06-17.
-    Next decision: approve building &amp; deploying the flat-HTML render fix in the <code>smartcms-preview</code> plugin (carefully, with the rollback drill), or hand the exact theme-bug location to the LifeStance/DOOR3 theme team for a theme-side fix.
-  </div>
+  SmartCMS · Internal engineering documentation · 2026-06-17 · Staging (lifestance.calyber.ai) · Production untouched.<br>
+  The earlier same-day investigation log (the original problem statement) is preserved at <a href="problem-investigation.html" style="color:#7fb2ff">problem-investigation.html</a>.
 </footer>
 
 </div>
