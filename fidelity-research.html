@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>WordPress Preview Fidelity — Research &amp; Solution (2026-06-18)</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --line:#2a2f3a;
+    --ink:#e7e9ee; --mut:#9aa3b2; --brand:#3b82f6; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --purp:#a855f7;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;font-size:16px}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 22px}
+  header.hero{padding:56px 0 30px;border-bottom:1px solid var(--line)}
+  .kick{color:var(--brand);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+  h1{font-size:34px;line-height:1.2;margin:10px 0 8px}
+  .sub{color:var(--mut);font-size:17px;max-width:800px}
+  .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+  .pill{font-size:12px;border:1px solid var(--line);background:var(--panel);padding:5px 11px;border-radius:999px;color:var(--mut)}
+  .pill b{color:var(--ink)}
+  section{padding:34px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:23px;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--brand);border:1px solid var(--line);border-radius:7px;padding:2px 8px;background:var(--panel)}
+  h3{font-size:17px;margin:24px 0 6px;color:var(--ink)}
+  p{margin:10px 0;color:#d3d7e0}
+  .lead{color:var(--mut);font-size:16px;margin-top:2px}
+  code{font-family:var(--mono);font-size:13px;background:#11141b;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#cdd3df}
+  ul,ol{margin:10px 0;padding-left:22px}
+  li{margin:6px 0;color:#d3d7e0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  td code{font-size:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card.ok{border-color:#1c4a2e}.card.bad{border-color:#5a2222}.card.warn{border-color:#5a4413}
+  .tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;display:inline-block}
+  .tag.ok{background:#0f2a18;color:#5fe08a;border:1px solid #1c4a2e}
+  .tag.bad{background:#2a1212;color:#ff8585;border:1px solid #5a2222}
+  .tag.warn{background:#2a2110;color:#ffcf6a;border:1px solid #5a4413}
+  .callout{background:var(--panel2);border-left:3px solid var(--brand);border-radius:0 10px 10px 0;padding:14px 16px;margin:16px 0}
+  .callout.bad{border-left-color:var(--bad)}.callout.ok{border-left-color:var(--ok)}.callout.warn{border-left-color:var(--warn)}.callout.purp{border-left-color:var(--purp)}
+  .callout b{color:#fff}
+  .flow{font-family:var(--mono);font-size:13px;color:#cdd3df;background:#0b0d12;border:1px solid var(--line);border-radius:10px;padding:18px;overflow:auto;margin:14px 0;line-height:1.7;white-space:pre}
+  .arr{color:var(--brand)} .g{color:#7ee787} .r{color:#ff8585} .y{color:#ffd479} .m{color:#9aa3b2}
+  footer{padding:34px 0 70px;color:var(--mut);font-size:13px}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .toc a{font-size:13px;color:#cdd3df;text-decoration:none;border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:8px}
+  .toc a:hover{border-color:var(--brand);color:#fff}
+  .rank{display:flex;gap:12px;align-items:flex-start;margin:12px 0;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+  .rank .badge{flex:none;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-family:var(--mono)}
+  .rank.win .badge{background:#0f2a18;color:#5fe08a;border:1px solid #1c4a2e}
+  .rank.no .badge{background:#2a1212;color:#ff8585;border:1px solid #5a2222}
+  .rank .body b{color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kick">SmartCMS · Internal Engineering Research</div>
+  <h1>WordPress Preview Fidelity — can the preview show <em>exactly</em> what publishes?</h1>
+  <p class="sub">A deep research pass into a single requirement: the WordPress preview must show the content <b>exactly as it will appear once live</b> — what the reviewer previews <em>is</em> the published page, 100%. This documents why that is hard today, the architectural unlock that makes it reachable, the solution, the alternatives weighed, an honest 100%-or-not verdict, and how we would prove it before any rollout.</p>
+  <div class="meta">
+    <span class="pill">Date: <b>2026-06-18</b></span>
+    <span class="pill">Status: <b>Research / design</b></span>
+    <span class="pill">Deployment: <b>FROZEN</b> (nothing shipped)</span>
+    <span class="pill">Method: <b>3 parallel research agents + system + theme dig</b></span>
+  </div>
+  <div class="toc">
+    <a href="#req">1 · The requirement</a>
+    <a href="#why">2 · Why it fails today</a>
+    <a href="#unlock">3 · The unlock</a>
+    <a href="#solution">4 · The solution</a>
+    <a href="#alts">5 · Alternatives</a>
+    <a href="#verdict">6 · 100% verdict</a>
+    <a href="#proof">7 · Proof</a>
+    <a href="#decision">8 · Decision needed</a>
+  </div>
+</header>
+
+<section id="req">
+  <h2><span class="n">1</span> The requirement</h2>
+  <p>One sentence, no wiggle room: <b>the WordPress preview must render the content exactly as it will be visible on the live WordPress page.</b> The view in the preview is the view that goes live. Not "like the editor" — like the <em>published page</em>, byte/pixel-faithful.</p>
+  <div class="callout">This is the right bar for healthcare content: a reviewer approves what they see, so what they see must be what readers get. Anything less means approving one thing and publishing another.</div>
+</section>
+
+<section id="why">
+  <h2><span class="n">2</span> Why the preview cannot match the page today</h2>
+  <p>A published LifeStance blog post is <b>not HTML</b>. It is a single WordPress ACF block — <code>acf/blog-section-builder</code> — whose JSON <code>data</code> holds the whole article (each section as <code>text_block_N_title</code> + <code>text_block_N_description</code>, with the inner HTML stored verbatim). The live page is produced <b>fresh</b> by the theme expanding that block JSON through <code>blog-section-builder.blade.php</code> (486 lines) on every request.</p>
+  <p>Publishing is therefore a <b>round-trip through a different representation</b>:</p>
+  <div class="flow"><span class="m">stored ACF blocks</span> ──theme renders──▶ <span class="y">HTML</span>   <span class="m">(this is what the editor loads &amp; edits)</span>
+                                        │
+                        editor edits ───┤
+                                        ▼
+        <span class="r">convertHtmlToAcf (LLM)</span> ──▶ <span class="g">ACF block JSON</span> ──▶ post_content ──theme re-renders──▶ <span class="g">LIVE PAGE</span></div>
+  <p>The editor holds the <b>rendered output</b> of the blocks (sections, wrapper divs, utility classes). Publishing re-derives the <b>source</b> (blocks) from that HTML with an LLM, then the theme renders those blocks again. So the live page is a fresh re-render of re-derived blocks.</p>
+  <div class="callout bad"><b>This is why "Option C" (render the editor's raw HTML) could never satisfy the requirement.</b> It renders the <em>input</em> side of the loop; the published page is the <em>output</em> side. They are different by construction — different DOM, different classes, different layout. It was not a bug to patch; it was the wrong representation.</div>
+  <h3>Two things compound it</h3>
+  <ul>
+    <li><b>The converter is a stochastic LLM.</b> <code>convertHtmlToAcf</code> is a ~37-node, ~25-LLM-call chain. The same input produced section counts of <b>8 / 14 / 15 / 16</b> across runs, and hard-fails roughly half the time. The published page reflects one particular roll of that dice.</li>
+    <li><b>Write-time transforms.</b> The publisher applies ~12 per-field byte transforms (unslash, entity-decode, newline→space, quote-escape) — which raw editor HTML has never been through.</li>
+  </ul>
+</section>
+
+<section id="unlock">
+  <h2><span class="n">3</span> The unlock — and it is not what we assumed</h2>
+  <p>We assumed the fix was a <b>deterministic converter</b>. The research shows that is <b>not required for fidelity</b>. The unlock is far simpler and bulletproof:</p>
+  <div class="callout purp"><b>Convert ONCE.</b> Convert the editor HTML → ACF blocks exactly once. The reviewer previews <b>that exact block payload</b>, rendered by the real theme. Go Live publishes <b>that same frozen payload, verbatim — never re-converting.</b></div>
+  <p>Because preview and publish then read the <b>identical bytes through the identical theme path</b>, they are identical <b>by construction</b> — even though the converter is random. The stochasticity stops mattering the instant you freeze one roll and ship it to both eyes. You do not need the converter to be deterministic; you need the <em>same single output</em> to feed both preview and publish.</p>
+  <div class="callout warn"><b>The trap to avoid:</b> conflating "fidelity" with "a perfect converter." They are separate. Convert-once guarantees fidelity. A deterministic converter is about output <em>correctness and speed</em> — a real, separate goal (and the research confirms it <em>is</em> feasible, because the target is one block type whose inner HTML is an opaque passthrough, not an open-ended tag-to-block mapping).</div>
+</section>
+
+<section id="solution">
+  <h2><span class="n">4</span> The solution — render the real blocks, convert once, promote verbatim</h2>
+  <div class="grid">
+    <div class="card"><h4>1 · Convert once, at preview time</h4><p class="lead">Editor HTML → ACF block payload, in a bounded retry loop (covers the ~50% hard-fail). <b>Stage that exact payload.</b></p></div>
+    <div class="card"><h4>2 · Preview the real render</h4><p class="lead">Reviewer sees the staged payload rendered through the <b>real theme block path</b> (<code>do_blocks</code> → <code>blog-section-builder.blade.php</code>) — not raw HTML.</p></div>
+    <div class="card"><h4>3 · Go Live promotes verbatim</h4><p class="lead">Go Live publishes <b>that exact payload</b> — no second conversion.</p></div>
+    <div class="card"><h4>4 · Publisher uses the approved payload</h4><p class="lead">The live publish path consumes the <b>approved</b> blocks rather than re-converting — closing the last gap.</p></div>
+  </div>
+  <p style="margin-top:14px">The plugin already implements the preview-render and the verbatim-promote halves. The remaining integration is wiring the <b>live publisher</b> to consume the approved payload, plus the theme-render dependency below.</p>
+</section>
+
+<section id="alts">
+  <h2><span class="n">5</span> Alternatives weighed</h2>
+  <div class="rank win"><div class="badge">A</div><div class="body"><b>Unify on ACF blocks — convert once, promote verbatim, real block render.</b> <span class="tag ok">RECOMMENDED</span><br><span class="lead">The only path to true 100% <em>with a correct published page</em>. Half-built already.</span></div></div>
+  <div class="rank no"><div class="badge">B</div><div class="body"><b>Raw HTML everywhere</b> (preview and publish both store raw HTML). <span class="tag bad">REJECT — fallback only</span><br><span class="lead">Trivially 100%, but it <em>degrades every published page</em> — loses the ACF block layout, CTAs, references, section styling. Parity by making both wrong. Fails the content-quality bar.</span></div></div>
+  <div class="rank no"><div class="badge">C</div><div class="body"><b>WordPress native revision/autosave preview.</b> <span class="tag bad">REJECT</span><br><span class="lead">Still needs the converter; ACF field context inside revisions is fragile; reviewer has no WP login. No fidelity gain, more moving parts.</span></div></div>
+  <div class="rank no"><div class="badge">D</div><div class="body"><b>Shadow / clone post.</b> <span class="tag bad">REJECT</span><br><span class="lead">Violates the locked "no clones / no deletes on the client's prod" rule, leaks into sitemaps/search, and still doesn't solve the conversion.</span></div></div>
+  <div class="rank no"><div class="badge">E</div><div class="body"><b>Swap-and-capture on the live post.</b> <span class="tag bad">SUBSUMED</span><br><span class="lead">The plugin already does the safe, in-memory version of this (swaps only the render output, never the DB). The "swap DB then restore" variant is strictly worse.</span></div></div>
+</section>
+
+<section id="verdict">
+  <h2><span class="n">6</span> The honest 100% verdict</h2>
+  <p><b>True 100% is architecturally achievable and empirically provable — but not with what is deployed today, and it is gated on two requirements, one of which is the client's.</b></p>
+  <table>
+    <tr><th>Requirement</th><th>Status</th></tr>
+    <tr><td>Convert once + promote verbatim</td><td><span class="tag warn">HALF-BUILT</span> — needs the <b>live publisher</b> wired to use the approved payload, not re-convert</td></tr>
+    <tr><td>Theme renders the blocks without the <b>section-stack 500</b></td><td><span class="tag bad">EXTERNAL BLOCKER</span> — it's the client's prod theme (<code>lifestance-sage11</code>); Calyber doesn't hold the source. Until cleared, the system silently falls back to raw-HTML = degraded</td></tr>
+    <tr><td>Verified on the <b>real prod theme + CDN</b> (prod <code>sage11</code> ≠ staging <code>sage9</code>)</td><td><span class="tag warn">NEEDS</span> a one-time gated prod verification</td></tr>
+    <tr><td>Deterministic converter</td><td><span class="tag ok">NOT REQUIRED for fidelity</span> — convert-once handles it. Needed only for correctness/speed, and it <b>is</b> feasible</td></tr>
+  </table>
+  <div class="callout"><b>Plain answer to "will it be 100%?"</b> Yes — the mechanism is sound and the hard parts (byte-parity at the assembler, gating, reversibility) are already proven on staging. But the guarantee is contingent on (a) clearing the <b>section-stack 500 on the client's theme</b> so the real block path renders, and (b) wiring publish to use the approved payload. Without both, the only currently-guaranteed-identical option is raw-HTML — which buys parity by degrading the published design, an unacceptable trade for healthcare content.</div>
+</section>
+
+<section id="proof">
+  <h2><span class="n">7</span> How we would prove it — before any rollout</h2>
+  <ol>
+    <li><b>Convert-once invariant (the load-bearing test).</b> Stage → capture payload <code>P</code>. Publish → read back the published payload <code>P′</code>. Assert <b><code>P == P′</code> byte-for-byte.</b> A positive control, not an eyeball. If they differ, no second conversion happened — 100% is structurally impossible and we stop.</li>
+    <li><b>Render-equivalence.</b> Render <code>P</code> via the preview path <em>and</em> as a real published page; normalize (strip nonces, cache-busters, timestamps); <b>diff the DOM trees</b>. Zero meaningful node/text/attribute differences = proven.</li>
+    <li><b>On the real prod theme</b> (<code>sage11</code>), across <b>flat and structured</b> content, confirming the render traversed the <b>true block path</b> — not the raw-HTML fallback.</li>
+    <li><b>Edge/cache parity + gating negatives</b> — anonymous/expired-token requests still see live, never pending.</li>
+  </ol>
+  <div class="callout ok"><b>"100% proven" = all of the above hold simultaneously</b>, on the real theme, across content shapes, via the true block path. That is a demonstrable bar, not a hopeful one.</div>
+</section>
+
+<section id="decision">
+  <h2><span class="n">8</span> The decision that unblocks everything</h2>
+  <p>The single fork that decides the outcome is the <b>section-stack 500 on the client's theme</b>:</p>
+  <div class="grid">
+    <div class="card ok"><h4>If we can fix / get source access to the prod theme</h4><p class="lead">Approach A delivers <b>true 100%</b>. Next step: the full implementation + proof plan, then a gated staging build, then the one-time prod verification.</p></div>
+    <div class="card warn"><h4>If the client's theme is off-limits</h4><p class="lead">The only guaranteed-identical option is raw-HTML-everywhere, which <b>degrades the published design</b>. We'd have to decide whether "preview == publish" is worth that trade — a product call, not an engineering one.</p></div>
+  </div>
+  <div class="callout"><b>Status:</b> deployment fully frozen — nothing shipped, this is research only. On a go, the next deliverable is the detailed Approach-A implementation + proof plan.</div>
+</section>
+
+<footer>
+  SmartCMS · Internal engineering research · 2026-06-18 · Method: three parallel read-only research agents (publish pipeline, converter feasibility, fidelity approaches) + live system + theme-source investigation. Nothing was deployed or mutated. Companion doc: <a href="index.html" style="color:#7fb2ff">the WP Preview &amp; Go Live solution</a>.
+</footer>
+
+</div>
+</body>
+</html>

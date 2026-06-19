@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SmartCMS — Architecture &amp; Flow (2026-06)</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --line:#2a2f3a;
+    --ink:#e7e9ee; --mut:#9aa3b2; --brand:#3b82f6; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --purp:#a855f7; --teal:#2dd4bf;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;font-size:16px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+  header.hero{padding:56px 0 30px;border-bottom:1px solid var(--line)}
+  .kick{color:var(--brand);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+  h1{font-size:34px;line-height:1.2;margin:10px 0 8px}
+  .sub{color:var(--mut);font-size:17px;max-width:820px}
+  .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+  .pill{font-size:12px;border:1px solid var(--line);background:var(--panel);padding:5px 11px;border-radius:999px;color:var(--mut)}
+  .pill b{color:var(--ink)}
+  section{padding:34px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:23px;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--brand);border:1px solid var(--line);border-radius:7px;padding:2px 8px;background:var(--panel)}
+  h3{font-size:16px;margin:22px 0 6px;color:#fff}
+  p{margin:10px 0;color:#d3d7e0}
+  code{font-family:var(--mono);font-size:12.5px;background:#11141b;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#cdd3df}
+  ul,ol{margin:8px 0;padding-left:20px}
+  li{margin:5px 0;color:#d3d7e0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  td code{font-size:12px}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .toc a{font-size:13px;color:#cdd3df;text-decoration:none;border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:8px}
+  .toc a:hover{border-color:var(--brand);color:#fff}
+  .diagram{background:#0b0d12;border:1px solid var(--line);border-radius:12px;padding:20px;margin:16px 0;overflow:auto}
+  .layer{display:flex;gap:12px;align-items:stretch;margin:10px 0;flex-wrap:wrap}
+  .node{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .node .t{font-weight:700;color:#fff;font-size:14px;display:flex;align-items:center;gap:7px}
+  .node .d{color:var(--mut);font-size:12.5px;margin-top:4px;line-height:1.5}
+  .node .env{font-family:var(--mono);font-size:11px;color:#8893a5;margin-top:6px}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .b-fe{background:#3b82f6}.b-n8n{background:#a855f7}.b-db{background:#2dd4bf}.b-wp{background:#22c55e}.b-co{background:#f59e0b}.b-ai{background:#ef4444}
+  .down{text-align:center;color:var(--brand);font-family:var(--mono);font-size:18px;margin:2px 0}
+  .flow{font-family:var(--mono);font-size:12.5px;color:#cdd3df;background:#0b0d12;border:1px solid var(--line);border-radius:10px;padding:16px;overflow:auto;margin:12px 0;line-height:1.75;white-space:pre}
+  .arr{color:var(--brand)} .g{color:#7ee787} .r{color:#ff8585} .y{color:#ffd479} .m{color:#9aa3b2} .p{color:#cba2ff}
+  .callout{background:var(--panel2);border-left:3px solid var(--brand);border-radius:0 10px 10px 0;padding:13px 16px;margin:16px 0}
+  .callout.warn{border-left-color:var(--warn)}.callout.ok{border-left-color:var(--ok)}.callout.bad{border-left-color:var(--bad)}
+  .callout b{color:#fff}
+  .tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px}
+  .tag.ok{background:#0f2a18;color:#5fe08a;border:1px solid #1c4a2e}
+  .tag.warn{background:#2a2110;color:#ffcf6a;border:1px solid #5a4413}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px}
+  .card h4{margin:0 0 6px;font-size:14px;color:#fff}
+  footer{padding:34px 0 70px;color:var(--mut);font-size:13px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 0;font-size:12px;color:var(--mut)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kick">SmartCMS · System Documentation</div>
+  <h1>SmartCMS — Architecture &amp; Flow</h1>
+  <p class="sub">How the system is wired today: the layers, the environments, and the end to end flows from content creation through AI publish to the live WordPress page. SmartCMS is an editorial workflow layer on top of the client's WordPress, letting teams draft, collaboratively edit, route through multi role approval, preview on the live theme, and publish AI assisted content.</p>
+  <div class="meta">
+    <span class="pill">Updated: <b>2026-06</b></span>
+    <span class="pill">Client: <b>LifeStance</b></span>
+    <span class="pill">Environments: <b>Staging + Production</b></span>
+  </div>
+  <div class="toc">
+    <a href="#layers">1 · The layers</a>
+    <a href="#diagram">2 · Architecture</a>
+    <a href="#envs">3 · Environments</a>
+    <a href="#flows">4 · Core flows</a>
+    <a href="#publish">5 · The publish format</a>
+    <a href="#data">6 · Data model</a>
+    <a href="#notes">7 · Key notes</a>
+  </div>
+</header>
+
+<section id="layers">
+  <h2><span class="n">1</span> The six layers</h2>
+  <p>SmartCMS is not one application — it is a set of cooperating services. The frontend orchestrates everything through n8n, which is the integration hub between the database, WordPress, the collaboration server, and the AI.</p>
+  <div class="legend">
+    <span><span class="dot b-fe"></span> Frontend</span>
+    <span><span class="dot b-n8n"></span> Orchestration</span>
+    <span><span class="dot b-db"></span> Data</span>
+    <span><span class="dot b-wp"></span> WordPress</span>
+    <span><span class="dot b-co"></span> Collaboration</span>
+    <span><span class="dot b-ai"></span> AI</span>
+  </div>
+  <div class="layer">
+    <div class="node"><div class="t"><span class="dot b-fe"></span>Frontend (React)</div><div class="d">The SmartCMS app — editor, content comparison, approvals queue, workflows dashboard, WordPress preview. Built and deployed via Lovable.</div><div class="env">React · Lovable · TipTap</div></div>
+    <div class="node"><div class="t"><span class="dot b-n8n"></span>Orchestration (n8n)</div><div class="d">The integration hub. Every frontend action is a webhook into an n8n workflow that reads/writes the database, calls WordPress, and runs the AI.</div><div class="env">n8n · webhooks · sub-workflows</div></div>
+    <div class="node"><div class="t"><span class="dot b-db"></span>Data (Supabase)</div><div class="d">Postgres. Publication requests, AI sessions, the approval workflow engine (instances + steps), users, roles, permissions.</div><div class="env">Supabase · Postgres · RLS</div></div>
+  </div>
+  <div class="layer">
+    <div class="node"><div class="t"><span class="dot b-wp"></span>WordPress</div><div class="d">The publishing target — the client's live site. Posts are stored as ACF blocks; the theme renders them. Two plugins: the client's publisher + our preview companion.</div><div class="env">WordPress · ACF · Sage/Blade theme</div></div>
+    <div class="node"><div class="t"><span class="dot b-co"></span>Collaboration (Hocuspocus)</div><div class="d">Real time collaborative editing for the TipTap editor, backed by Y.js. Multiple editors on one document.</div><div class="env">Hocuspocus · Y.js · WebSocket</div></div>
+    <div class="node"><div class="t"><span class="dot b-ai"></span>AI</div><div class="d">Content generation/rewriting and the HTML→ACF block conversion used on the publish path.</div><div class="env">LLM chains (inside n8n)</div></div>
+  </div>
+</section>
+
+<section id="diagram">
+  <h2><span class="n">2</span> Architecture at a glance</h2>
+  <div class="diagram">
+    <div class="layer"><div class="node" style="text-align:center"><div class="t" style="justify-content:center"><span class="dot b-fe"></span>SmartCMS Frontend &nbsp;<span class="m" style="font-weight:400">(React / Lovable)</span></div><div class="d">editor · approvals · comparison · dashboard · WordPress preview</div></div></div>
+    <div class="down">│ &nbsp; every action = a webhook</div>
+    <div class="layer"><div class="node" style="text-align:center;border-color:#3d1f63"><div class="t" style="justify-content:center"><span class="dot b-n8n"></span>n8n Orchestration Hub</div><div class="d">API router → workflows: approvals, publish (BPRA), HTML→ACF convert, preview stage bridge, Go Live</div></div></div>
+    <div class="down">┌──────────────┬──────────────┬──────────────┐</div>
+    <div class="layer">
+      <div class="node"><div class="t"><span class="dot b-db"></span>Supabase</div><div class="d">requests, sessions, approval workflow engine, users/roles</div></div>
+      <div class="node"><div class="t"><span class="dot b-co"></span>Hocuspocus</div><div class="d">collaborative editing (Y.js)</div></div>
+      <div class="node"><div class="t"><span class="dot b-wp"></span>WordPress</div><div class="d">ACF blocks → theme → live page</div></div>
+    </div>
+    <div class="down">&nbsp;</div>
+    <div class="layer"><div class="node" style="text-align:center;border-color:#5a2222"><div class="t" style="justify-content:center"><span class="dot b-ai"></span>AI (LLM chains, invoked inside n8n)</div><div class="d">content generation · HTML → ACF block conversion</div></div></div>
+  </div>
+  <p class="lead" style="color:var(--mut)">The frontend never talks to WordPress, Supabase, or the AI directly. <b>n8n is the single integration boundary</b> — which is why every capability is a workflow, and why the database is the source of truth for the editorial state while WordPress is the source of truth for published content.</p>
+</section>
+
+<section id="envs">
+  <h2><span class="n">3</span> Environments</h2>
+  <p>Staging and production are fully separate stacks — separate n8n, separate database, separate WordPress, even a different theme version.</p>
+  <table>
+    <tr><th>Layer</th><th>Staging</th><th>Production</th></tr>
+    <tr><td>Frontend</td><td><code>smart-cms.lovable.app</code> (+ localhost hits staging)</td><td>separate Lovable publish</td></tr>
+    <tr><td>n8n</td><td><code>alexd3.app.n8n.cloud</code> (n8n Cloud)</td><td><code>api.smartcms.door3dev.com</code> (self-hosted)</td></tr>
+    <tr><td>Supabase</td><td><code>gkkdncfpptgpbraaktom</code></td><td><code>fdqtykizqxmdwdkzhlwf</code></td></tr>
+    <tr><td>WordPress</td><td><code>lifestance.calyber.ai</code></td><td><code>lifestance.com</code></td></tr>
+    <tr><td>WP theme</td><td><code>lifestance-ws</code> (Sage&nbsp;9)</td><td><code>lifestance-sage11</code> (Sage&nbsp;11)</td></tr>
+    <tr><td>Hocuspocus</td><td><code>door3-wp-ws.calyber.ai</code></td><td><code>door3-wp-ws-prod.calyber.ai</code></td></tr>
+  </table>
+  <div class="callout warn"><b>The two are not identical.</b> The theme version differs (Sage 9 vs Sage 11), so a render proven on staging is not automatically true on production. Production changes are gated and verified independently.</div>
+</section>
+
+<section id="flows">
+  <h2><span class="n">4</span> The core flows</h2>
+
+  <h3>A · Content creation &amp; collaborative editing</h3>
+  <div class="flow"><span class="p">Editor</span> opens a draft <span class="arr">→</span> TipTap editor <span class="arr">↔</span> <span class="y">Hocuspocus</span> (live multi-user editing, Y.js)
+                       <span class="arr">→</span> content saved as a <span class="g">publication_request</span> in Supabase (via n8n)</div>
+
+  <h3>B · Approval workflow (multi-role governance)</h3>
+  <div class="flow"><span class="p">Editor</span> submits → n8n builds a <span class="g">workflow_instance</span> + ordered <span class="g">steps</span> from the chosen template
+   <span class="arr">→</span> each step routes to its approver role (Clinical, Supervisor, Publishing Manager…)
+   <span class="arr">→</span> approver reviews on the <span class="y">Comparison page</span>:
+        <span class="g">Approve &amp; Post</span>  → advance the chain; on final step → PUBLISH
+        <span class="r">Reject</span> / <span class="r">Rework</span> → back to the editor
+   queue + status driven by <code>getApprovalsByRole</code> (instance + step state)</div>
+
+  <h3>C · AI Publish (what actually goes live)</h3>
+  <div class="flow"><span class="m">final approval</span> <span class="arr">→</span> <span class="g">BPRA</span> (BlogPublishRequestAction, n8n)
+   <span class="arr">→</span> <span class="r">convertHtmlToAcf</span> — editor HTML → ACF block JSON  <span class="m">(LLM chain)</span>
+   <span class="arr">→</span> <span class="g">acf_blocks_api_manager</span> writes <code>post_content</code> as ACF block markup
+   <span class="arr">→</span> WordPress theme renders the blocks <span class="arr">→</span> <span class="g">LIVE PAGE</span></div>
+  <p class="lead" style="color:var(--mut)">A published post is stored as a single ACF block (<code>acf/blog-section-builder</code>) whose JSON holds the article; the theme re-renders it fresh on every request.</p>
+
+  <h3>D · WordPress Preview (reviewer sees the live theme)</h3>
+  <div class="flow"><span class="p">Reviewer</span> clicks <span class="y">WordPress Preview</span>
+   <span class="arr">→</span> n8n stage bridge stages the content + mints a signed token
+   <span class="arr">→</span> <span class="g">smartcms-preview</span> companion plugin renders it on the LIVE theme, reviewer-only (token→cookie)
+   <span class="arr">→</span> shown in an iframe — no WordPress login needed</div>
+
+  <h3>E · Go Live (one-click direct publish)</h3>
+  <div class="flow"><span class="p">Reviewer</span> clicks <span class="y">Go Live</span> in the preview
+   <span class="arr">→</span> <code>goLivePreview</code> webhook → plugin promotes the previewed content to the live post
+   <span class="arr">→</span> the request is resolved (status → <span class="g">Published</span>, workflow closed, audit logged)</div>
+  <div class="callout"><b>Two publish paths, by design.</b> <b>Approve &amp; Post</b> = governed, step-by-step approval chain. <b>Go Live</b> = immediate, single-click publish of preview-confirmed content. Complementary, not duplicates.</div>
+</section>
+
+<section id="publish">
+  <h2><span class="n">5</span> The publish format — and why preview fidelity is hard</h2>
+  <p>This is the single most important architectural fact. The editor edits <b>rendered HTML</b>, but WordPress stores and publishes <b>ACF blocks</b>. Publishing is a round trip:</p>
+  <div class="flow"><span class="m">stored ACF blocks</span> ──theme renders──▶ <span class="y">HTML</span>  <span class="m">(the editor loads &amp; edits this)</span>
+                                      │ edits
+                                      ▼
+        <span class="r">convertHtmlToAcf (LLM)</span> ──▶ <span class="g">ACF blocks</span> ──theme re-renders──▶ <span class="g">LIVE PAGE</span></div>
+  <p>The editor holds the <em>output</em> of the blocks; publishing re-derives the <em>source</em> (blocks) and the theme renders them again. That is why a preview that renders the editor's raw HTML cannot perfectly match the published page, and why true 100% preview fidelity is an active design effort (render the real blocks via the theme, converting once and publishing that exact payload).</p>
+  <div class="callout"><b>Current state:</b> the preview renders the editor HTML directly (fast, reliable) — faithful for simple content, but not pixel-identical to the block-rendered published page for richly structured posts. The path to true 100% is documented separately.</div>
+</section>
+
+<section id="data">
+  <h2><span class="n">6</span> Data model (the editorial engine)</h2>
+  <p>The approval workflow is a small state engine in Supabase:</p>
+  <table>
+    <tr><th>Table</th><th>Role</th></tr>
+    <tr><td><code>publication_requests</code></td><td>One per publish request — the edited content (<code>final_html_content</code>), the source post, status (<code>Pending/Approved/Rework/Rejected/Published</code>), reviewer, title.</td></tr>
+    <tr><td><code>workflow_instances</code></td><td>The live approval run for a request — overall status (<code>in_progress/approved/…</code>).</td></tr>
+    <tr><td><code>workflow_instance_steps</code></td><td>The ordered steps of an instance — each a role-gated approval gate.</td></tr>
+    <tr><td><code>workflow_instance_step_assignees</code></td><td>Who can action each step.</td></tr>
+    <tr><td><code>ai_audit_sessions</code></td><td>The AI generation/edit session behind a request.</td></tr>
+    <tr><td><code>profiles · roles · permissions</code></td><td>Users, their roles, and the component/endpoint permissions that gate the UI.</td></tr>
+  </table>
+  <p class="lead" style="color:var(--mut)">Two systems of record: <b>Supabase</b> owns the editorial/approval state; <b>WordPress</b> owns the published content. A publish is the moment the two are reconciled.</p>
+</section>
+
+<section id="notes">
+  <h2><span class="n">7</span> Key technical notes</h2>
+  <div class="grid">
+    <div class="card"><h4>n8n is the only integration boundary</h4><p class="lead" style="color:var(--mut);font-size:13.5px">Every capability is a workflow. The frontend holds no secrets and talks to nothing directly — it posts to webhooks, which is why new features ship as new workflows.</p></div>
+    <div class="card"><h4>The HTML→ACF converter is the fragile link</h4><p class="lead" style="color:var(--mut);font-size:13.5px">Conversion is an LLM chain — stochastic and slow. A deterministic replacement is in progress; the publish path is being moved toward convert-once for reliability and fidelity.</p></div>
+    <div class="card"><h4>The preview companion plugin is additive &amp; reversible</h4><p class="lead" style="color:var(--mut);font-size:13.5px">It renders pending content on the live theme behind a single-use signed token, never touches live posts until promote, and leaves no residue when inactive.</p></div>
+    <div class="card"><h4>Production work is gated</h4><p class="lead" style="color:var(--mut);font-size:13.5px">Writes to the production WordPress, n8n, and database are deliberately gated and verified independently after every change. Staging is the build surface.</p></div>
+  </div>
+</section>
+
+<footer>
+  SmartCMS · Architecture &amp; flow reference · 2026-06 · Frontend (React/Lovable) → n8n orchestration → Supabase · WordPress · Hocuspocus · AI. Staging and production are fully separate stacks.
+</footer>
+
+</div>
+</body>
+</html>
