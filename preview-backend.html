@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>WordPress Preview — Backend Architecture (in depth)</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --line:#2a2f3a;
+    --ink:#e7e9ee; --mut:#9aa3b2; --brand:#3b82f6; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --purp:#a855f7; --teal:#2dd4bf;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;font-size:16px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+  header.hero{padding:56px 0 30px;border-bottom:1px solid var(--line)}
+  .kick{color:var(--brand);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+  h1{font-size:33px;line-height:1.2;margin:10px 0 8px}
+  .sub{color:var(--mut);font-size:17px;max-width:830px}
+  .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+  .pill{font-size:12px;border:1px solid var(--line);background:var(--panel);padding:5px 11px;border-radius:999px;color:var(--mut)}
+  .pill b{color:var(--ink)}
+  section{padding:32px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:22px;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--brand);border:1px solid var(--line);border-radius:7px;padding:2px 8px;background:var(--panel)}
+  h3{font-size:16px;margin:22px 0 6px;color:#fff}
+  p{margin:10px 0;color:#d3d7e0}
+  .lead{color:var(--mut);font-size:15px}
+  code{font-family:var(--mono);font-size:12.5px;background:#11141b;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#cdd3df}
+  ul,ol{margin:8px 0;padding-left:20px}
+  li{margin:6px 0;color:#d3d7e0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  td code{font-size:12px}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .toc a{font-size:13px;color:#cdd3df;text-decoration:none;border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:8px}
+  .toc a:hover{border-color:var(--brand);color:#fff}
+  .flow{font-family:var(--mono);font-size:12.5px;color:#cdd3df;background:#0b0d12;border:1px solid var(--line);border-radius:10px;padding:18px;overflow:auto;margin:14px 0;line-height:1.8;white-space:pre}
+  .arr{color:var(--brand)} .g{color:#7ee787} .r{color:#ff8585} .y{color:#ffd479} .m{color:#9aa3b2} .p{color:#cba2ff} .t{color:#5eead4}
+  .callout{background:var(--panel2);border-left:3px solid var(--brand);border-radius:0 10px 10px 0;padding:13px 16px;margin:16px 0}
+  .callout.warn{border-left-color:var(--warn)}.callout.ok{border-left-color:var(--ok)}.callout.bad{border-left-color:var(--bad)}.callout.purp{border-left-color:var(--purp)}
+  .callout b{color:#fff}
+  .step{display:flex;gap:14px;margin:14px 0;align-items:flex-start}
+  .step .dot{flex:none;width:30px;height:30px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--brand);font-weight:700}
+  .step .body{flex:1}
+  .step .body b{color:#fff}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px}
+  .card h4{margin:0 0 6px;font-size:14px;color:#fff}
+  footer{padding:34px 0 70px;color:var(--mut);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kick">SmartCMS · Backend Architecture</div>
+  <h1>WordPress Preview — how we fetch the live blog and render the exact view</h1>
+  <p class="sub">An in-depth walkthrough of the preview backend: how a reviewer's proposed edits get rendered on the <b>real LifeStance theme</b>, reviewer-only, without touching the live post — covering the resolve step, the staging bridge, the companion plugin, the token-based auth, the render substitution, draft handling, the references repair, and Go Live.</p>
+  <div class="meta">
+    <span class="pill">Layer: <b>Backend / WordPress</b></span>
+    <span class="pill">Pattern: <b>companion plugin + n8n bridge</b></span>
+    <span class="pill">Render: <b>live theme, reviewer-only</b></span>
+  </div>
+  <div class="toc">
+    <a href="#parts">1 · Moving parts</a>
+    <a href="#flow">2 · End-to-end flow</a>
+    <a href="#resolve">3 · Fetch the live blog</a>
+    <a href="#stage">4 · Stage the content</a>
+    <a href="#render">5 · Render the preview</a>
+    <a href="#auth">6 · Auth &amp; security</a>
+    <a href="#drafts">7 · Drafts</a>
+    <a href="#refs">8 · References repair</a>
+    <a href="#golive">9 · Go Live</a>
+    <a href="#why">10 · Why this design</a>
+  </div>
+</header>
+
+<section id="parts">
+  <h2><span class="n">1</span> The moving parts</h2>
+  <p>The preview is produced by four cooperating pieces. The frontend never talks to WordPress directly — n8n is the boundary, and a companion plugin on the WordPress side does the reviewer-only render.</p>
+  <table>
+    <tr><th>Component</th><th>Role</th><th>Identity</th></tr>
+    <tr><td><b>SmartCMS frontend</b></td><td>Reviewer clicks "WordPress Preview"; shows the result in an iframe.</td><td>React · <code>WpPreviewOverlay</code></td></tr>
+    <tr><td><b>n8n stage bridge</b></td><td>Resolves the live blog, stages the proposed content, mints the preview URL.</td><td><code>stageWordpressPreview-staging-v2.0.0</code> (sub-workflow)</td></tr>
+    <tr><td><b>Companion WP plugin</b></td><td>Stores the pending content on the post, renders it reviewer-only on the live theme, promotes on Go Live. Additive &amp; reversible.</td><td><code>smartcms-preview</code> (installed on the live WP)</td></tr>
+    <tr><td><b>WordPress + live theme</b></td><td>Renders the proposed content with the real site CSS/templates.</td><td><code>lifestance-ws</code> (Sage/Blade)</td></tr>
+    <tr><td><b>Supabase</b></td><td>Holds the publication request → maps to the WordPress post id.</td><td><code>publication_requests</code></td></tr>
+  </table>
+</section>
+
+<section id="flow">
+  <h2><span class="n">2</span> The end-to-end flow</h2>
+  <div class="flow"><span class="p">Reviewer</span> clicks "WordPress Preview" in SmartCMS
+   <span class="arr">│</span>
+   <span class="arr">▼</span>  POST <code>blogAdminActions {action:"preview-stage", publishId, fullHtmlContent}</code>
+<span class="m">n8n API router</span> <span class="arr">──▶</span> <span class="t">stage bridge</span>
+   <span class="arr">│</span> 1. <span class="g">resolve</span>   publishId <span class="arr">→</span> source_blog_id (the WordPress post)
+   <span class="arr">│</span> 2. <span class="g">stage</span>     POST plugin <code>/stage/{post_id}</code> with the editor HTML
+   <span class="arr">│</span> 3. plugin stores pending HTML on the post + mints a <span class="y">signed token</span>
+   <span class="arr">▼</span> returns <code>{ preview_url, token }</code>  (early-ack + poll until ready)
+<span class="p">Frontend</span> loads <code>preview_url</code> in an <b>iframe</b>
+   <span class="arr">│</span>
+   <span class="arr">▼</span>  GET the live post URL <code>?smartcms_preview=&lt;token&gt;</code>
+<span class="m">Companion plugin on WordPress</span>
+   <span class="arr">│</span> token <span class="arr">→</span> httpOnly cookie (single-use) <span class="arr">→</span> redirect to clean URL
+   <span class="arr">│</span> the_content swap: serve the <span class="g">PROPOSED</span> content (not the live post)
+   <span class="arr">▼</span> rendered by the <b>real LifeStance theme</b> <span class="arr">──▶</span> shown to the reviewer
+<span class="p">Reviewer</span> clicks <span class="y">Go Live</span> <span class="arr">──▶</span> promote pending <span class="arr">→</span> live post_content + resolve the request</div>
+</section>
+
+<section id="resolve">
+  <h2><span class="n">3</span> Step 1 — fetching the live blog</h2>
+  <p>The preview must render against the <b>real published post</b> on the real theme, so the first job is to resolve which WordPress post we're previewing.</p>
+  <div class="step"><div class="dot">a</div><div class="body"><b>The frontend sends a publish reference, not a post id.</b> SmartCMS knows the editorial object (<code>publishId</code> = the <code>publication_requests</code> row), plus the reviewer's current editor HTML (<code>fullHtmlContent</code>).</div></div>
+  <div class="step"><div class="dot">b</div><div class="body"><b>The bridge resolves it to the WordPress post.</b> A Supabase read on <code>publication_requests</code> maps <code>publishId → source_blog_id</code> — the actual WordPress post ID on the live site. It also pulls the AI session for context. So "fetching the live blog" = resolving the editorial request to its live WordPress post, by id.</div></div>
+  <div class="callout"><b>Why by id, not by re-fetching content:</b> we don't copy the live blog's HTML to render it. We render <em>on</em> the live post (same id, same theme, same templates), and only substitute the body at render time. That's what keeps the preview faithful to the live site's chrome, CSS, and layout.</div>
+</section>
+
+<section id="stage">
+  <h2><span class="n">4</span> Step 2 — staging the proposed content</h2>
+  <p>The bridge sends the reviewer's edited HTML to the plugin's <code>/stage</code> endpoint, which stores it as a <b>pending layer on the post</b> — never touching the live content.</p>
+  <div class="flow"><span class="t">stage bridge</span> <span class="arr">──▶</span> POST <code>/wp-json/smartcms-preview/v1/stage/{post_id}</code>
+        body: <code>{ "html": &lt;the editor's content&gt; }</code>
+<span class="m">plugin /stage</span>
+   <span class="arr">│</span> store pending HTML in post meta  <code>_smartcms_pending_html</code>
+   <span class="arr">│</span> mint a signed, post-scoped, single-use token
+   <span class="arr">▼</span> return <code>{ staged, token, preview_url }</code></div>
+  <ul>
+    <li><b>Pending, not live.</b> The proposed content lives in an isolated post-meta key. The live <code>post_content</code> is untouched until Go Live, so the public never sees pending content.</li>
+    <li><b>Option C — the editor HTML directly.</b> What's staged is the editor's own HTML (the same bytes the reviewer is editing), not a reconstructed format. This is the key render decision (see §10).</li>
+    <li><b>Capability-gated.</b> <code>/stage</code> requires a logged-in user with <code>edit_posts</code> — the bridge calls it with the SmartCMS service credential.</li>
+  </ul>
+</section>
+
+<section id="render">
+  <h2><span class="n">5</span> Step 3 — rendering the exact view (the heart of it)</h2>
+  <p>The reviewer's iframe loads the <b>live post's own URL</b> with the token. The plugin intercepts the render and swaps the body for the pending content — so the proposed edits are painted by the real theme.</p>
+  <div class="step"><div class="dot">a</div><div class="body"><b>Token → cookie exchange</b> (<code>template_redirect</code>). The first request carrying a valid token burns it (single-use), sets a short-lived <b>httpOnly cookie</b>, and redirects to a clean URL (<code>?smartcms_pv=1</code>) so the token never lingers in history or referrers.</div></div>
+  <div class="step"><div class="dot">b</div><div class="body"><b>Authorization check.</b> The render classifies the request: <code>ok</code> (cookie authorizes the staged render), <code>blocked</code> (a preview was attempted but isn't authorized → an explicit "preview unavailable" notice), or <code>none</code> (not a preview request → the live page, untouched).</div></div>
+  <div class="step"><div class="dot">c</div><div class="body"><b>The body swap</b> (<code>the_content</code> filter, priority 8). For an authorized request on the queried post, the plugin returns the <b>staged pending HTML instead of the live post_content</b>. WordPress and the theme then render that exactly as they render any post body — same wrappers, same CSS, same templates.</div></div>
+  <div class="callout ok"><b>The result:</b> the reviewer sees their proposed content laid out by the <em>real</em> LifeStance theme, at the real post's URL — but nobody else does, and the live post is unchanged.</div>
+  <h3>Cache &amp; isolation</h3>
+  <ul>
+    <li>Preview responses set <code>no-store</code> + <code>Referrer-Policy: no-referrer</code> — never cached, token never leaks via Referer.</li>
+    <li>The swap only touches the main queried post — related/recent-post widgets that also run <code>the_content</code> stay live.</li>
+  </ul>
+</section>
+
+<section id="auth">
+  <h2><span class="n">6</span> Auth &amp; security model</h2>
+  <p>The reviewer has <b>no WordPress login</b>. A signed token <em>is</em> the authorization — layered to keep it safe.</p>
+  <table>
+    <tr><th>Control</th><th>How</th></tr>
+    <tr><td>Token integrity</td><td>HMAC-signed payload <code>post | user | exp | nonce</code> — can't be forged or retargeted to another post.</td></tr>
+    <tr><td>Short-lived</td><td>15-minute TTL; the frontend mints a fresh token on every preview open / Refresh.</td></tr>
+    <tr><td>Single-use</td><td>The token's nonce is burned on first render; a replayed token shows the "unavailable" notice, never content.</td></tr>
+    <tr><td>Durable auth hidden</td><td>After first use the authorization lives in an <b>httpOnly</b> cookie (JS can't read it) bound to the post + expiry.</td></tr>
+    <tr><td>Never silently live</td><td>A failed/expired/replayed preview renders an explicit notice — a reviewer can never mistake the live page for their staged preview.</td></tr>
+    <tr><td>Audit</td><td>Mint / render / promote events are logged to a rolling audit on the post.</td></tr>
+  </table>
+</section>
+
+<section id="drafts">
+  <h2><span class="n">7</span> Draft posts</h2>
+  <p>Editors preview drafts too — but a draft has <b>no public front-end</b>, so WordPress would 404 it before the render swap could run. The plugin handles this with a <code>pre_get_posts</code> hook: when a valid preview token/cookie is present, it pins the main query to exactly the authorized post id and allows non-public statuses — so the draft resolves and the normal render path runs. Without a valid token, drafts 404 as usual (no exposure).</p>
+</section>
+
+<section id="refs">
+  <h2><span class="n">8</span> The references repair</h2>
+  <p>A real-world wrinkle: the collaborative editor (TipTap) mangles the original numbered references list — it strips the styling class and flattens the nested <code>&lt;ol&gt;&lt;li&gt;&lt;ul&gt;</code> into fragmented per-item <code>&lt;ul&gt;</code> lists. The live theme globally resets list markers, so those fragments render without numbers.</p>
+  <p>So the render path (and the Go Live promote) run a <b>scoped repair</b>: using a real HTML parser (PHP <code>DOMDocument</code>), it rebuilds <em>only</em> the references block into one clean <code>&lt;ol class="list-decimal"&gt;</code> — the exact structure the theme numbers. It is fail-open (any parse issue returns the original) and never touches the article body, so it can't affect layout.</p>
+  <div class="callout"><b>Applied in two places, identically:</b> at <b>render</b> (so the preview shows numbered references) and at <b>promote</b> (so Go Live writes the same clean list to the published page). Preview == published for references.</div>
+</section>
+
+<section id="golive">
+  <h2><span class="n">9</span> Go Live — promote to the live post</h2>
+  <p>When the reviewer is happy, one click publishes exactly what they previewed.</p>
+  <div class="flow"><span class="p">Go Live</span> <span class="arr">──▶</span> <code>goLivePreview</code> webhook
+   <span class="arr">│</span> resolve publishId <span class="arr">→</span> source_blog_id
+   <span class="arr">│</span> POST plugin <code>/promote/{post_id}</code>
+   <span class="arr">│</span>    write the staged HTML (references-repaired) into live <code>post_content</code>
+   <span class="arr">│</span> resolve the request in Supabase: status <span class="arr">→</span> <span class="g">Published</span>, workflow closed, audit logged
+   <span class="arr">▼</span> the live page now shows exactly the previewed content</div>
+  <p class="lead">Promote writes the same staged bytes the reviewer saw — so what you preview is what publishes. The pending layer is then cleared.</p>
+</section>
+
+<section id="why">
+  <h2><span class="n">10</span> Why this design — and the honest limit</h2>
+  <div class="grid">
+    <div class="card"><h4>Companion plugin, not a replica</h4><p class="lead">Rendering on the real WordPress + real theme is the only way to get the live site's true CSS, templates, and chrome. A replica renderer could always drift.</p></div>
+    <div class="card"><h4>Additive &amp; reversible</h4><p class="lead">The plugin only adds a pending meta layer + a gated render filter. It never mutates a live post until Go Live, and leaves no residue when inactive.</p></div>
+    <div class="card"><h4>Option C — render the editor HTML directly</h4><p class="lead">Fast (no slow AI conversion on the path) and it skips a fatal bug in the theme's block renderer. Faithful for flat content.</p></div>
+    <div class="card"><h4>Token, not a WP session</h4><p class="lead">Reviewers have no WordPress accounts; a signed, single-use, short-lived token authorizes exactly one post's preview and nothing else.</p></div>
+  </div>
+  <div class="callout warn"><b>The honest limit.</b> A published LifeStance post is stored as structured ACF blocks that the theme re-renders; the editor edits the <em>rendered HTML</em>. Option C previews that HTML directly — perfectly faithful for simple content, but for richly-structured posts it isn't pixel-identical to the block-rendered published page. The path to true 100% (render the actual blocks via the theme, converting once and publishing that exact payload) is documented separately; it depends on clearing a section-render fault in the client's theme.</div>
+</section>
+
+<footer>
+  SmartCMS · WordPress Preview backend architecture · Frontend → n8n stage bridge → smartcms-preview plugin → live WordPress + theme. The companion plugin renders proposed content reviewer-only on the real theme, behind a signed single-use token, without touching the live post until Go Live.
+</footer>
+
+</div>
+</body>
+</html>
