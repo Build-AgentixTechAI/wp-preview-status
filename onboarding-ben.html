@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>SmartCMS — Onboarding for Ben</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --panel2:#1d212b; --line:#2a2f3a;
+    --ink:#e7e9ee; --mut:#9aa3b2; --brand:#3b82f6; --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444; --purp:#a855f7;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;font-size:16px}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 22px}
+  header.hero{padding:54px 0 28px;border-bottom:1px solid var(--line)}
+  .kick{color:var(--brand);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+  h1{font-size:33px;line-height:1.2;margin:10px 0 8px}
+  .sub{color:var(--mut);font-size:17px;max-width:800px}
+  .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+  .pill{font-size:12px;border:1px solid var(--line);background:var(--panel);padding:5px 11px;border-radius:999px;color:var(--mut)}
+  .pill b{color:var(--ink)}
+  section{padding:30px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:21px;margin:0 0 6px;display:flex;align-items:center;gap:10px}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--brand);border:1px solid var(--line);border-radius:7px;padding:2px 8px;background:var(--panel)}
+  h3{font-size:15px;margin:20px 0 6px;color:#fff}
+  p{margin:10px 0;color:#d3d7e0}
+  .lead{color:var(--mut);font-size:15px}
+  code{font-family:var(--mono);font-size:12.5px;background:#11141b;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#cdd3df}
+  pre{background:#0b0d12;border:1px solid var(--line);border-radius:10px;padding:15px;overflow:auto;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#cdd3df;margin:12px 0}
+  ul,ol{margin:8px 0;padding-left:20px}
+  li{margin:6px 0;color:#d3d7e0}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  td code{font-size:12px}
+  .toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .toc a{font-size:13px;color:#cdd3df;text-decoration:none;border:1px solid var(--line);background:var(--panel);padding:6px 12px;border-radius:8px}
+  .toc a:hover{border-color:var(--brand);color:#fff}
+  .callout{background:var(--panel2);border-left:3px solid var(--brand);border-radius:0 10px 10px 0;padding:13px 16px;margin:16px 0}
+  .callout.warn{border-left-color:var(--warn)}.callout.ok{border-left-color:var(--ok)}.callout.bad{border-left-color:var(--bad)}
+  .callout b{color:#fff}
+  .secret{color:#ffcf6a;font-family:var(--mono);font-size:12px}
+  footer{padding:30px 0 70px;color:var(--mut);font-size:13px}
+  a{color:#7fb2ff}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="kick">SmartCMS · Agent Onboarding</div>
+  <h1>Welcome, Ben — start here</h1>
+  <p class="sub">Everything you need to get into the SmartCMS project: the code, the environments, how to run it, the current state, what's in flight, and the working conventions. Lev is the other agent on this project — coordinate before deploying anything.</p>
+  <div class="meta">
+    <span class="pill">Project: <b>SmartCMS</b></span>
+    <span class="pill">Client: <b>LifeStance</b></span>
+    <span class="pill">Repo: <b>alexasianov/smart-cms</b> (private)</span>
+  </div>
+  <div class="toc">
+    <a href="#what">1 · What this is</a>
+    <a href="#code">2 · Get the code</a>
+    <a href="#envs">3 · Environments</a>
+    <a href="#run">4 · Run it locally</a>
+    <a href="#creds">5 · Credentials</a>
+    <a href="#state">6 · Current state</a>
+    <a href="#freeze">7 · Freeze &amp; rules</a>
+    <a href="#docs">8 · Deep-dive docs</a>
+  </div>
+</header>
+
+<section id="what">
+  <h2><span class="n">1</span> What SmartCMS is</h2>
+  <p>An editorial workflow layer on top of the client's WordPress. Teams draft and collaboratively edit blog content, route it through multi-role approval, preview it on the live WordPress theme, and publish AI-assisted content.</p>
+  <p><b>The stack, in one line:</b> React frontend (Lovable) → <b>n8n</b> webhooks (the only integration boundary) → Supabase (editorial data) · WordPress (publishing) · Hocuspocus (collab editing) · AI (HTML→ACF conversion).</p>
+  <div class="callout"><b>Key fact to internalize:</b> the frontend talks to nothing directly — every action is an n8n workflow. And a published post is stored as <b>ACF blocks</b> the theme re-renders, while the editor edits the <em>rendered HTML</em>. That gap drives most of the hard problems (see the preview docs in §8).</div>
+</section>
+
+<section id="code">
+  <h2><span class="n">2</span> Get the code</h2>
+  <p>The repo is <b>private</b>, so you need the token. Rubeena will give you the GitHub token (<code>gho_…</code>) over a secure channel — <b>do not commit it anywhere.</b></p>
+  <pre># option A — gh CLI
+echo "&lt;GITHUB_TOKEN from Rubeena&gt;" | gh auth login --with-token
+
+# option B — clone directly with the token
+git clone https://&lt;GITHUB_TOKEN&gt;@github.com/alexasianov/smart-cms.git</pre>
+  <p class="lead">The token (Build-AgentixTechAI) has <b>pull + push</b> on the repo (verified). It's broad and OAuth-session-bound — if access suddenly drops, ask Rubeena to re-share or rotate.</p>
+  <ul>
+    <li>Main branch: <code>main</code> (this is what the staging frontend deploys from).</li>
+    <li><b>Branch your work</b> and coordinate with Lev — both agents have push access, so don't push to <code>main</code> without a heads-up.</li>
+  </ul>
+</section>
+
+<section id="envs">
+  <h2><span class="n">3</span> Environments</h2>
+  <p>Staging and production are <b>fully separate stacks</b> — separate n8n, DB, WordPress, even theme version.</p>
+  <table>
+    <tr><th>Layer</th><th>Staging</th><th>Production</th></tr>
+    <tr><td>Frontend</td><td><code>smart-cms.lovable.app</code> (localhost also hits staging)</td><td>separate Lovable publish</td></tr>
+    <tr><td>n8n</td><td><code>alexd3.app.n8n.cloud</code> (Cloud)</td><td><code>api.smartcms.door3dev.com</code> (self-hosted)</td></tr>
+    <tr><td>Supabase</td><td><code>gkkdncfpptgpbraaktom</code></td><td><code>fdqtykizqxmdwdkzhlwf</code></td></tr>
+    <tr><td>WordPress</td><td><code>lifestance.calyber.ai</code></td><td><code>lifestance.com</code></td></tr>
+    <tr><td>WP theme</td><td><code>lifestance-ws</code> (Sage 9)</td><td><code>lifestance-sage11</code> (Sage 11)</td></tr>
+  </table>
+  <div class="callout warn"><b>Production is gated.</b> Writes to prod WordPress / n8n / DB are deliberately blocked behind explicit approval. Staging is your build surface. Reads are fine; writes/deploys are not, without a go.</div>
+</section>
+
+<section id="run">
+  <h2><span class="n">4</span> Run it locally</h2>
+  <pre>npm install
+npm run dev        # Vite dev server on http://localhost:8080
+npx vite build     # build (use this to type-check your changes)</pre>
+  <p>Your local frontend at <code>localhost:8080</code> hits the <b>staging backend</b> (staging n8n + staging Supabase + staging WordPress) — so you can test full flows locally without deploying. You'll need a SmartCMS login (ask Rubeena for staging credentials).</p>
+  <p class="lead">There's a <code>.env</code> with the staging config (base URL, Supabase). It comes from the onboarding bundle / Rubeena — it is not committed.</p>
+</section>
+
+<section id="creds">
+  <h2><span class="n">5</span> Credentials &amp; access — what exists, where to get it</h2>
+  <p>None of these values live in this page or the repo. Rubeena (or the onboarding bundle) provides them over a secure channel. This is just the map of what you'll need, depending on what you work on.</p>
+  <table>
+    <tr><th>To do…</th><th>You need</th><th>Source</th></tr>
+    <tr><td>Clone / push the repo</td><td>GitHub token (<code>gho_…</code>)</td><td>Rubeena (secure)</td></tr>
+    <tr><td>Run the FE / log in</td><td><code>.env</code> + a staging SmartCMS login</td><td>onboarding bundle / Rubeena</td></tr>
+    <tr><td>Read/inspect staging n8n workflows</td><td>Staging n8n API key</td><td>onboarding bundle (<code>~/.n8n-staging-key</code>)</td></tr>
+    <tr><td>Read staging Supabase (psql)</td><td>Staging DB host + password</td><td>secure channel / Rubeena</td></tr>
+    <tr><td>Read prod Supabase (read-only)</td><td>Prod DB host + password</td><td>secure channel / Rubeena</td></tr>
+    <tr><td>Deploy the WP preview plugin to staging</td><td>VPS SSH key → Contabo (the staging WP host) access chain</td><td>secure channel / Rubeena <b>— and the deploy freeze (§7)</b></td></tr>
+  </table>
+  <div class="callout bad"><b>Never</b> put any of these in the repo, a hosted page, a commit, or a workflow dump. Secret-scan before any <code>git add</code> of dumps/artifacts. The GitHub token in particular gets auto-revoked by GitHub if it lands in a public commit.</div>
+</section>
+
+<section id="state">
+  <h2><span class="n">6</span> Current state — read this before you touch anything</h2>
+  <p>A lot of recent work is <b>not yet in the repo</b>, so a fresh clone won't reflect reality. Sync with Lev first.</p>
+  <ul>
+    <li><b>Uncommitted local FE changes</b> (on Lev's machine): draft-delete confirmation popup, notification panel click-outside-to-close, editor image-size CSS, Go Live + Option-C preview wiring. Not in the repo yet.</li>
+    <li><b>Staging WP plugin changes are deployed but not committed</b>: the draft-preview fix and the references-repair live on the staging WordPress container (with <code>*.lev-bak-*</code> backups), not in <code>wp-plugins/smartcms-preview/</code> in the repo.</li>
+    <li><b>Staging n8n</b>: a <code>goLivePreview</code> webhook + a <code>golive_resolve_request</code> RPC + a <code>Published</code> enum value were added for the Go Live feature — backend state, not in the repo.</li>
+    <li><b>WordPress Preview</b> currently uses "Option C" (renders the editor HTML directly). It's fast and faithful for simple content but not pixel-identical to the block-rendered published page for structured posts. Achieving true 100% is blocked on getting the client's theme source (a section-render fault crashes the real block render).</li>
+  </ul>
+</section>
+
+<section id="freeze">
+  <h2><span class="n">7</span> The freeze &amp; working rules</h2>
+  <div class="callout warn"><b>Active deploy freeze:</b> no deploys to the staging WordPress plugin or staging n8n until Rubeena explicitly lifts it. Pushing to git is fine; deploying to the live staging surfaces is not.</div>
+  <ul>
+    <li><b>Coordinate with Lev</b> — both of you can push. Branch your work; don't push <code>main</code> without a heads-up.</li>
+    <li><b>Verify outcomes, not status codes.</b> An HTTP 200 ≠ correct — read the DB / live state and diff before/after.</li>
+    <li><b>Back up before any live mutation</b>, and keep a tested rollback. Reads are free; writes are gated.</li>
+    <li><b>Production is off-limits</b> without explicit, per-change approval.</li>
+    <li><b>Don't trust memory for "what's deployed"</b> — check the live artifact (the running plugin, the n8n execution, the served bundle).</li>
+  </ul>
+</section>
+
+<section id="docs">
+  <h2><span class="n">8</span> Deep-dive docs (read these next)</h2>
+  <ul>
+    <li><a href="architecture.html">SmartCMS — Architecture &amp; Flow</a> — the whole system, the six layers, the core flows.</li>
+    <li><a href="preview-backend.html">WordPress Preview — Backend Architecture</a> — exactly how the preview resolves the live blog and renders on the real theme (the companion plugin, the token, the render swap).</li>
+    <li><a href="fidelity-research.html">Preview Fidelity — Research &amp; Solution</a> — why preview ≠ published today, the convert-once unlock, and the honest 100% verdict.</li>
+    <li><a href="index.html">WP Preview &amp; Go Live — what shipped</a> — the speed fix, Option C, and the two publish paths.</li>
+  </ul>
+  <div class="callout ok"><b>Fastest path to productive:</b> clone the repo (§2) → run it locally against staging (§4) → read the two architecture docs above → then sync with Lev on the current state (§6) before picking up work.</div>
+</section>
+
+<footer>
+  SmartCMS · Onboarding for Ben · Repo: alexasianov/smart-cms (private) · Coordinate with Lev · Staging is the build surface; production and the staging deploy surfaces are gated. No secrets are stored in this page — credentials come from Rubeena over a secure channel.
+</footer>
+
+</div>
+</body>
+</html>
